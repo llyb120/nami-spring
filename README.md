@@ -47,6 +47,7 @@ public class Ctrl extends NamiSpringController {
 ## spring对象的注入
 Nami使用import static来获取bean，故不会侵入spring原本的注入方式，只需建立一个类注入即可
 ```java
+@Component
 public class TestBean {
 
     public static Environment environment;
@@ -59,3 +60,22 @@ public class TestBean {
     }
 }
 ```
+## 控制器(如无特殊说明，所有控制器均指Nami的控制器而非spring)
+* 你可以在非Nami控制器包下使用spring原本的控制器
+* 控制器的类必须继承 NamiBaseController ，例如
+```java
+public class Test extends NamiBaseController {
+}
+```
+* 若配置了访问路径(例如上文的/api)以及控制器的包名(例如com.example.ctrl)，则访问/api/{c}/{a}时会自动调用com.example.ctrl.{c}.{a}方法，a必须为一个public无参实现
+
+## 热加载
+* 如果你使用了nami的控制器，并且所调用的内容在配置的热加载包下，那么每当你修改这些内容的时候，无需重启服务直接刷新即可看到效果
+* 通常，你注入的spring的内容不要放在热加载的内容中，否则会无法正确获取到bean
+
+## 取值
+在控制器中你可以使用类似php的 $get/$post/$request 来获取请求的值，分别对应GET请求/POST请求/任何请求
+
+## 授权
+* 你可以使用原本spring的过滤器来实现授权
+* 如果你想，你可以在NamiConfig中重写namiAuth来提供一个用于授权的对象
