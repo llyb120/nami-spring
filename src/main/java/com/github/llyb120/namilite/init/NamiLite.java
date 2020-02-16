@@ -10,7 +10,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.github.llyb120.json.Json;
 import com.github.llyb120.namilite.ByteCodeLoader;
 import com.github.llyb120.namilite.HotLoader;
-import com.github.llyb120.namilite.NamiController;
+import com.github.llyb120.namilite.NamiSpringController;
 import com.github.llyb120.namilite.boost.V20Auto;
 import com.github.llyb120.namilite.core.Async;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -309,7 +309,7 @@ public class NamiLite {
                 clzz = loader.loadClass(className);
                 return Bean(clzz);
             } else {
-                loader = NamiController.class.getClassLoader();
+                loader = NamiSpringController.class.getClassLoader();
                 clzz = loader.loadClass(className);
                 return Bean(clzz);
             }
@@ -326,7 +326,7 @@ public class NamiLite {
                 loader = new HotLoader();
                 return clzz = loader.loadClass(className);
             } else {
-                loader = NamiController.class.getClassLoader();
+                loader = NamiSpringController.class.getClassLoader();
                 return clzz = loader.loadClass(className);
             }
         } catch (Exception e){

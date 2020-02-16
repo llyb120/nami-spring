@@ -24,7 +24,7 @@ import static com.github.llyb120.namilite.init.NamiBean.*;
 
 @RequestMapping("/api/v20")
 @RestController
-public class NamiController {
+public class NamiSpringController {
 
     @RequestMapping("/{clz}/{method}")
     public Object call(
