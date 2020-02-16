@@ -20,10 +20,10 @@ public NamiConfig namiConfig(){
     return new NamiConfig(){
         //注册热加载的包
         @Override
-        public ConcurrentHashSet<String> hotPackages() {
-            ConcurrentHashSet set = new ConcurrentHashSet();
-            set.add("com.github.llyb120.stock.ctrl");
-            return set;
+        public String[] hotPackages() {
+            return new String[]{
+                "com.github.llyb120.stock.ctrl"
+            };
         }
 
         //注册控制器所在包

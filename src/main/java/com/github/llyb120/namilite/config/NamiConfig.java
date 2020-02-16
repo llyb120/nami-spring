@@ -37,8 +37,8 @@ public class NamiConfig {
         return "";
     }
 
-    public ConcurrentHashSet<String> hotPackages(){
-        return new ConcurrentHashSet<>();
+    public String[] hotPackages(){
+        return new String[0];
     }
 
 
