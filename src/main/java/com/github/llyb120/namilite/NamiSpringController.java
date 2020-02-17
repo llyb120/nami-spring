@@ -4,6 +4,7 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ClassUtil;
 
 import com.github.llyb120.json.Json;
+import com.github.llyb120.namilite.config.ResultErrorType;
 import com.github.llyb120.namilite.init.NamiLite;
 import com.github.llyb120.namilite.boost.ErrorMessage;
 import com.github.llyb120.namilite.boost.OnlySu;
@@ -73,9 +74,8 @@ public class NamiSpringController {
                         if (unLogin == null) {
                             //校验登录
                             if(!namiAuth.checkLogin(request, response)){
-                                return null;
+                                return namiConfig.resultError(ResultErrorType.AUTH_FAILED, null);
                             }
-
                         }
                     }
                     //检查SU
@@ -94,6 +94,7 @@ public class NamiSpringController {
                             DSTransactionManager.commit();
                         }
                     } catch (Exception e){
+                        e.printStackTrace();
                         try {
                             if(hasBeetlSql){
                                 DSTransactionManager.rollback();
@@ -103,12 +104,9 @@ public class NamiSpringController {
                         }
                         ErrorMessage errorMessage = declaredMethod.getAnnotation(ErrorMessage.class);
                         if(errorMessage != null){
-                            e.printStackTrace();
-//                            throw namiConfig.controllerException(errorMessage.value());
-                            return namiConfig.resultError(errorMessage.value());
+                            return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, errorMessage.value());
                         }
-                        return namiConfig.resultError(e.getMessage());
-//                        throw e;
+                        return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, e.getMessage());
                     }
                     RequestMapping mapping = declaredMethod.getAnnotation(RequestMapping.class);
                     if (mapping == null) {

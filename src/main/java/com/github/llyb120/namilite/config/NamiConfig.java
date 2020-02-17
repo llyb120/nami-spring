@@ -29,8 +29,12 @@ public class NamiConfig {
         return R.ok(data);
     }
 
-    public Object resultError(String msg){
-        return R.error(msg);
+    public Object resultError(ResultErrorType type, Object arg){
+        if(type == ResultErrorType.CONTROLLER_EXCEPTION){
+            return R.error((String) arg);
+        } else {
+            return R.error("权限校验失败");
+        }
     }
 
     public String controllerPackage(){

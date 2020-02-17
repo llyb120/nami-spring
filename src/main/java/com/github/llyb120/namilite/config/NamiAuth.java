@@ -14,6 +14,10 @@ public class NamiAuth {
                         HttpServletResponse response){
         return true;
     }
+//
+//    public Object authFailed(){
+//        return null;
+//    }
 
 
 
