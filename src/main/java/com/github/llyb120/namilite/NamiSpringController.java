@@ -74,7 +74,7 @@ public class NamiSpringController {
                         if (unLogin == null) {
                             //校验登录
                             if(!namiAuth.checkLogin(request, response)){
-                                return namiConfig.resultError(ResultErrorType.AUTH_FAILED, null);
+                                return namiConfig.resultError(ResultErrorType.UN_LOGIN, null);
                             }
                         }
                     }

@@ -32,8 +32,10 @@ public class NamiConfig {
     public Object resultError(ResultErrorType type, Object arg){
         if(type == ResultErrorType.CONTROLLER_EXCEPTION){
             return R.error((String) arg);
+        } else if(type == ResultErrorType.UN_LOGIN){
+            return R.error("没有登陆");
         } else {
-            return R.error("权限校验失败");
+            return R.error(String.valueOf(arg));
         }
     }
 
