@@ -55,7 +55,7 @@ public class NamiConfig {
 
 
     public final Set<String> getFullHotPackages(){
-        Set<String> set = new ConcurrentHashSet(Arrays.asList(hotPackages()));
+        Set<String> set = new ConcurrentHashSet(hotPackages());
         set.addAll(controlPackages().values());
         return set;
     }

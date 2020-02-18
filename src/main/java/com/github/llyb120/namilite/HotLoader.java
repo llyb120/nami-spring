@@ -88,10 +88,13 @@ public class HotLoader extends ClassLoader {
     }
 
     public static String toClassName(File file){
-        return file.getAbsolutePath().replace(src, "")
-                .replaceAll("/|\\\\",".")
-                .replace(".java", "")
-                ;
+        String name = file.getAbsolutePath().replace(src, "")
+                .replaceAll("/|\\\\", ".")
+                .replace(".java", "");
+            if(name.startsWith(".")){
+                name = name.substring(1);
+            }
+            return name;
     }
 
 
