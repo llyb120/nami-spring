@@ -119,7 +119,7 @@ public class NamiLite {
                                     changedFile.stream()
                                             .map(File::new)
                                             //过滤掉不热加载的文件
-                                            .filter(file -> HotLoader.isHotFile(file))
+                                            .filter(HotLoader::isHotFile)
                                             .toArray(File[]::new)
                             );
                         } catch (Exception e) {
