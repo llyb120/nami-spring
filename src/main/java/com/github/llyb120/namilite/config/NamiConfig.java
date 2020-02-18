@@ -4,9 +4,10 @@ import cn.hutool.core.collection.ConcurrentHashSet;
 import com.github.llyb120.namilite.error.ControllerException;
 import com.github.llyb120.namilite.func.Arg1Function;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.github.llyb120.json.Json.o;
 
 public class NamiConfig {
 
@@ -39,12 +40,23 @@ public class NamiConfig {
         }
     }
 
-    public String controllerPackage(){
-        return "";
+//    public String controllerPackage(){
+//        return "";
+//    }
+
+    public Map controlPackages(){
+        return o();
     }
 
     public String[] hotPackages(){
         return new String[0];
+    }
+
+
+    public final Set<String> getFullHotPackages(){
+        Set<String> set = new ConcurrentHashSet<>(Arrays.asList(hotPackages()));
+        set.addAll(controlPackages().values());
+        return set;
     }
 
 

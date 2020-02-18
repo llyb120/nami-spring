@@ -5,6 +5,7 @@
 1 新建一个空的springboot项目
 
 2 加入依赖
+
 ```xml
 <dependency>
     <groupId>com.github.llyb120</groupId>
@@ -26,21 +27,16 @@ public NamiConfig namiConfig(){
             };
         }
 
-        //注册控制器所在包
+        //0.0.8 新增，现在支持对多个路由和包的映射
         @Override
-        public String controllerPackage() {
-            return "com.github.llyb120.stock.ctrl";
+        public Map controlPackages() {
+            return o(
+                "/api/:c/:a", "com.github.llyb120.stock.ctrl"
+            );
         }
     } ;
 }
 ```
-4 注册控制器
-```java
-@RequestMapping("/api")
-@RestController
-public class Ctrl extends NamiSpringController {
-}
-``` 
 
 至此，即可编写Nami的控制器，并享受Nami带来的飞速开发 
 

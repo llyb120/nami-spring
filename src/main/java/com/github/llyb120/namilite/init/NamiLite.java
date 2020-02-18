@@ -10,7 +10,6 @@ import cn.hutool.core.util.ZipUtil;
 import com.github.llyb120.json.Json;
 import com.github.llyb120.namilite.ByteCodeLoader;
 import com.github.llyb120.namilite.HotLoader;
-import com.github.llyb120.namilite.NamiSpringController;
 import com.github.llyb120.namilite.boost.V20Auto;
 import com.github.llyb120.namilite.core.Async;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +118,8 @@ public class NamiLite {
                             HotLoader.compile(
                                     changedFile.stream()
                                             .map(File::new)
+                                            //过滤掉不热加载的文件
+                                            .filter(file -> HotLoader.isHotFile(file))
                                             .toArray(File[]::new)
                             );
                         } catch (Exception e) {

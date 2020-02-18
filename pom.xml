@@ -12,7 +12,7 @@
 
     <groupId>com.github.llyb120</groupId>
     <artifactId>nami-spring</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
 
 
     <dependencies>
@@ -46,6 +46,12 @@
             <groupId>com.github.llyb120</groupId>
             <artifactId>json</artifactId>
             <version>LATEST</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tuckey</groupId>
+            <artifactId>urlrewritefilter</artifactId>
+            <version>4.0.3</version>
         </dependency>
 
         <dependency>

@@ -1,14 +1,16 @@
-package com.github.llyb120.namilite;
+package com.github.llyb120.namilite.init;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ClassUtil;
 
 import com.github.llyb120.json.Json;
+import com.github.llyb120.namilite.NamiBaseController;
 import com.github.llyb120.namilite.config.ResultErrorType;
 import com.github.llyb120.namilite.init.NamiLite;
 import com.github.llyb120.namilite.boost.ErrorMessage;
 import com.github.llyb120.namilite.boost.OnlySu;
 import com.github.llyb120.namilite.boost.UnLogin;
+import com.github.llyb120.namilite.rewrite.UrlRewriteHolder;
 import org.beetl.sql.core.DSTransactionManager;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ import java.util.Map;
 import static com.github.llyb120.json.Json.o;
 import static com.github.llyb120.namilite.init.NamiBean.*;
 
-@RequestMapping("/api/v20")
+@RequestMapping("/nami")
 @RestController
 public class NamiSpringController {
 
@@ -47,8 +49,17 @@ public class NamiSpringController {
         if(method.equals("undefined")){
             return page404();
         }
-//        Map body = o();
-        String className = namiConfig.controllerPackage() + "." + clz; //"com.beeasy.v20.hot.ctrl." + clz;
+        String className = null;
+        String url = UrlRewriteHolder.localPath.get();
+        for (NamiSpringFilter.Route route : NamiSpringFilter.routes) {
+            if(route.matches(url)){
+                className = route.packageName + "." + clz; //"com.beeasy.v20.hot.ctrl." + clz;
+                break;
+            }
+        }
+        if (className == null) {
+            return page404();
+        }
         Class clzz = NamiLite.Clz(className);
         Object instance = clzz.newInstance();//V20.Bean(className);
 //        Class clzz = instance.getClass();

@@ -49,12 +49,7 @@ public class HotLoader extends ClassLoader {
         if (clz != null) {
             return clz;
         }
-        check:{
-            for (String hotPackage : namiConfig.hotPackages()) {
-                if(name.startsWith(hotPackage)){
-                    break check;
-                }
-            }
+        if (!isHotClass(name)) {
             return defaultLoader.loadClass(name);
         }
         try {
@@ -78,6 +73,27 @@ public class HotLoader extends ClassLoader {
     private File toSrcFile(String name) {
         return new File(src, name.replace(".", "/") + ".java");
     }
+
+    public static boolean isHotClass(String clzName){
+        for (String hotPackage : namiConfig.getFullHotPackages()) {
+            if(clzName.startsWith(hotPackage)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isHotFile(File file){
+        return file.exists() && isHotClass(toClassName(file));
+    }
+
+    public static String toClassName(File file){
+        return file.getAbsolutePath().replace(src, "")
+                .replaceAll("/|\\\\",".")
+                .replace(".java", "")
+                ;
+    }
+
 
     private File toClassFile(String name) {
         return new File(src + "/../../../target/classes", name.replace(".", "/") + ".class");
