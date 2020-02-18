@@ -19,12 +19,13 @@
 @Bean
 public NamiConfig namiConfig(){
     return new NamiConfig(){
+
         //注册热加载的包
         @Override
-        public String[] hotPackages() {
-            return new String[]{
+        public List<String> hotPackages() {
+            return a(
                 "com.github.llyb120.stock.ctrl"
-            };
+            ) ;
         }
 
         //0.0.8 新增，现在支持对多个路由和包的映射
