@@ -12,7 +12,7 @@
 
     <groupId>com.github.llyb120</groupId>
     <artifactId>nami-spring</artifactId>
-    <version>0.0.9</version>
+    <version>0.0.11</version>
 
 
     <dependencies>
@@ -58,6 +58,14 @@
             <groupId>com.ibeetl</groupId>
             <artifactId>beetl-framework-starter</artifactId>
             <version>1.1.60.RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.11.0</version>
             <scope>provided</scope>
         </dependency>
 

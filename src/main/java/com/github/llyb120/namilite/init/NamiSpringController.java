@@ -117,7 +117,7 @@ public class NamiSpringController {
                         if(errorMessage != null){
                             return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, errorMessage.value());
                         }
-                        return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, e.getMessage());
+                        return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, e.getCause().getMessage());
                     }
                     RequestMapping mapping = declaredMethod.getAnnotation(RequestMapping.class);
                     if (mapping == null) {

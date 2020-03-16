@@ -1,6 +1,8 @@
 package com.github.llyb120.namilite.config;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
+import com.github.llyb120.namilite.api.EasyApi;
+import com.github.llyb120.namilite.api.EasyRule;
 import com.github.llyb120.namilite.error.ControllerException;
 import com.github.llyb120.namilite.func.Arg1Function;
 
@@ -16,7 +18,12 @@ public class NamiConfig {
         String msg = "";
         if(args.length > 0 && args[0] instanceof String){
             msg = (String) args[0];
-            Object[] _args = Arrays.copyOfRange(args, 1, args.length);
+            Object[] _args;
+            if(args.length > 1 && args[1] instanceof Object[]){
+                _args = (Object[])args[1];//Arrays.copyOfRange(args, 1, args.length);
+            } else {
+                _args = Arrays.copyOfRange(args, 1, args.length);
+            }
             return new ControllerException(msg, _args);
         } else {
             return new ControllerException();
@@ -53,6 +60,14 @@ public class NamiConfig {
         return a();//new String[0];
     }
 
+    public void easyApi(){
+        EasyApi.registerMongoDB("db", null)
+                .bind("/api/mongo")
+                .rule(new EasyRule()
+                        .collection("fu")
+                        .fields("fuck", "you", "oh"));
+//        return o();
+    }
 
     public final Set<String> getFullHotPackages(){
         Set<String> set = new ConcurrentHashSet(hotPackages());

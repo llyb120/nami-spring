@@ -33,12 +33,13 @@ public class NamiSpringFilter extends UrlRewriteFilter {
         int i =0;
         for (Map.Entry<String, String> entry : pks.entrySet()) {
             String url = entry.getKey().replaceAll("\\:c|\\:a","([^\\/\\\\?]+)");
+            url += "(\\\\?[\\w\\W]+)?";
             Pattern p = Pattern.compile(url);
             sb.append("<rule><from>^");
             sb.append(url);
             sb.append("$</from>");
             sb.append("<run class=\"com.github.llyb120.namilite.rewrite.UrlRewriteHolder\" />\n");
-            sb.append("<to qsappend=\"true\">/nami/$1/$2");
+            sb.append("<to>/nami/$1/$2$3");
             sb.append("</to></rule>");
             routes[i++] = new Route(p, entry.getValue());
         }
