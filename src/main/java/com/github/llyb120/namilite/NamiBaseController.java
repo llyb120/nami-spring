@@ -44,15 +44,15 @@ public abstract class NamiBaseController {
 
 
 
-    protected HttpEntity download(byte[] bs, String fileName) {
+    public static HttpEntity download(byte[] bs, String fileName) {
         return download(bs, fileName, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     }
 
-    protected HttpEntity download(byte[] bs, String fileName, String contentType) {
+    public static HttpEntity download(byte[] bs, String fileName, String contentType) {
         return new HttpEntity(bs, genHeaders(fileName, contentType));
     }
 
-    protected HttpEntity download(File file, String fileName, boolean delTemp){
+    public static HttpEntity download(File file, String fileName, boolean delTemp){
         byte[] bs = FileUtil.readBytes(file);
         if(delTemp){
             file.delete();
@@ -60,15 +60,15 @@ public abstract class NamiBaseController {
         return download(bs, fileName, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     }
 
-    protected HttpEntity download(File file, String fileName){
+    public static HttpEntity download(File file, String fileName){
         return download(file, fileName, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     }
 
-    protected HttpEntity download(File file, String fileName, String contentType){
+    public static HttpEntity download(File file, String fileName, String contentType){
         return new HttpEntity(FileUtil.readBytes(file), genHeaders(fileName, contentType));
     }
 
-    protected HttpHeaders genHeaders(String fileName, String contentType){
+    public static HttpHeaders genHeaders(String fileName, String contentType){
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, contentType);//MediaType.APPLICATION_OCTET_STREAM_VALUE);
         try {
@@ -82,11 +82,11 @@ public abstract class NamiBaseController {
     }
 
 
-    protected void error() {
+    public static void error() {
         throw namiConfig.controllerException();
     }
 
-    protected void error(String tmpl, Object ...args){
+    public static void error(String tmpl, Object ...args){
         throw namiConfig.controllerException(tmpl, args);
     }
 }

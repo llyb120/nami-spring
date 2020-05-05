@@ -74,7 +74,8 @@ public class NamiSpringController {
         if (unLogin != null) {
             checkLogin = false;
         }
-        while(clzz != null && !clzz.getName().equals(NamiBaseController.class.getName())){
+        Object ret = null;
+        loop: while(clzz != null && !clzz.getName().equals(NamiBaseController.class.getName())){
             for (Method declaredMethod : clzz.getDeclaredMethods()) {
                 if(!ClassUtil.isPublic(declaredMethod)){
                     continue;
@@ -95,7 +96,6 @@ public class NamiSpringController {
                         return page404();
                     }
                     //拉出结果
-                    Object ret = null;
                     try{
                         if(hasBeetlSql){
                             DSTransactionManager.start();
@@ -115,16 +115,19 @@ public class NamiSpringController {
                         }
                         ErrorMessage errorMessage = declaredMethod.getAnnotation(ErrorMessage.class);
                         if(errorMessage != null){
-                            return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, errorMessage.value());
+                            ret = namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, errorMessage.value());
+                        } else {
+                            ret = namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, e.getCause().getMessage());
                         }
-                        return namiConfig.resultError(ResultErrorType.CONTROLLER_EXCEPTION, e.getCause().getMessage());
+                        break loop;
                     }
                     RequestMapping mapping = declaredMethod.getAnnotation(RequestMapping.class);
                     if (mapping == null) {
                         if(ret instanceof HttpEntity){
                             return ret;
                         }
-                        return namiConfig.resultOk(ret);//Result.ok(ret);
+                        ret = namiConfig.resultOk(ret);//Result.ok(ret);
+                        break loop;
                     }
                     String[] header = mapping.produces();
                     if(header.length > 0){
@@ -132,12 +135,22 @@ public class NamiSpringController {
                         headers.add(HttpHeaders.CONTENT_TYPE, String.join("; ", header));
                         return new ResponseEntity<>(ret, headers, HttpStatus.OK);
                     } else {
-                        return namiConfig.resultOk(ret);//Result.ok(ret);
+                        ret = namiConfig.resultOk(ret);
+                        break loop;
                     }
                 }
             }
 
             clzz = clzz.getSuperclass();
+        }
+
+        if (ret != null) {
+            if(!(ret instanceof String)){
+                ret = Json.stringify(ret);
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+            return new ResponseEntity<>(ret, headers, HttpStatus.OK);
         }
 
         //404
