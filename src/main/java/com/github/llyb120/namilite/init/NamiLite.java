@@ -53,44 +53,47 @@ public class NamiLite {
 
 
         if(!isDev){
+            /**
+             * 暂时不需要动态编译
+             */
             //解压jar包
-            int start = 0;
-            if(path.startsWith("file:/")){
-                if(isWin){
-                    start = "file:/".length();
-                } else {
-                    start = "file:".length();
-                }
-            }
-            int end = path.indexOf(".jar!");
-            end += ".jar".length();
-            File jar = new File(jarPath = path.substring(start, end));
-            jarDir = new File(jar.getParent(), jar.getName().replace(".jar", ""));
-            jarDir.delete();
-            ZipUtil.unzip(jar, jarDir);
-
-            //libpath
-            StringBuilder sb = new StringBuilder();
-            sb.append(new File(jarDir,"BOOT-INF/classes").getAbsolutePath());
-            if(isWin){
-                sb.append(";");
-            } else {
-                sb.append(":");
-            }
-            for (File file : new File(jarDir, "BOOT-INF/lib").listFiles()) {
-                if(file.getName().endsWith(".jar")){
-                    sb.append(file.getAbsolutePath());
-                    if(isWin){
-                        sb.append(";");
-                    } else {
-                        sb.append(":");
-                    }
-                }
-            }
-            if(sb.length() > 0){
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            cp = sb.toString();
+//            int start = 0;
+//            if(path.startsWith("file:/")){
+//                if(isWin){
+//                    start = "file:/".length();
+//                } else {
+//                    start = "file:".length();
+//                }
+//            }
+//            int end = path.indexOf(".jar!");
+//            end += ".jar".length();
+//            File jar = new File(jarPath = path.substring(start, end));
+//            jarDir = new File(jar.getParent(), jar.getName().replace(".jar", ""));
+//            jarDir.delete();
+//            ZipUtil.unzip(jar, jarDir);
+//
+//            //libpath
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(new File(jarDir,"BOOT-INF/classes").getAbsolutePath());
+//            if(isWin){
+//                sb.append(";");
+//            } else {
+//                sb.append(":");
+//            }
+//            for (File file : new File(jarDir, "BOOT-INF/lib").listFiles()) {
+//                if(file.getName().endsWith(".jar")){
+//                    sb.append(file.getAbsolutePath());
+//                    if(isWin){
+//                        sb.append(";");
+//                    } else {
+//                        sb.append(":");
+//                    }
+//                }
+//            }
+//            if(sb.length() > 0){
+//                sb.deleteCharAt(sb.length() - 1);
+//            }
+//            cp = sb.toString();
 //            System.out.println(cp);
         } else {
             watch();
