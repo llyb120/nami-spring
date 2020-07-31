@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class NamiBean {
@@ -15,7 +16,7 @@ public class NamiBean {
 
     @Autowired
     public void set(
-            @Autowired NamiConfig config
+            NamiConfig config
     ){
         namiConfig = config;
         namiAuth = config.namiAuth();
@@ -29,12 +30,6 @@ public class NamiBean {
         }
 
 
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    NamiConfig namiConfig(){
-        return new NamiConfig();
     }
 
 

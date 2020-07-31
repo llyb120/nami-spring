@@ -27,8 +27,14 @@ public class NamiTestApplication {
             @Override
             public List<String> hotPackages() {
                 return a(
-                    "com.github.llyb120.stock.ctrl"
                 ) ;
+            }
+
+            @Override
+            public List<String> springHotPackages() {
+                return a(
+                    "com.github.llyb120.namitest.test"
+                );
             }
 
             //0.0.8 新增，现在支持对多个路由和包的映射

@@ -1,4 +1,4 @@
-package com.github.llyb120.namilite;
+package com.github.llyb120.namilite.hotswap;
 
 
 import cn.hutool.core.io.FileUtil;
@@ -20,7 +20,7 @@ import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 import static com.github.llyb120.namilite.init.NamiLite.*;
 
 
-public class HotLoader extends ClassLoader {
+public class NamiHotLoader extends ClassLoader {
 
     public static String src;
     public static String target;
@@ -35,7 +35,7 @@ public class HotLoader extends ClassLoader {
     }
 
     private static JavaCompiler javac = ToolProvider.getSystemJavaCompiler(); //new EcjCompiler();
-    private static ClassLoader defaultLoader = HotLoader.class.getClassLoader();
+    private static ClassLoader defaultLoader = NamiHotLoader.class.getClassLoader();
 
 
     @Override
@@ -74,7 +74,7 @@ public class HotLoader extends ClassLoader {
         return new File(src, name.replace(".", "/") + ".java");
     }
 
-    public static boolean isHotClass(String clzName){
+    public boolean isHotClass(String clzName){
         for (String hotPackage : namiConfig.getFullHotPackages()) {
             if(clzName.startsWith(hotPackage)) {
                 return true;
@@ -83,7 +83,7 @@ public class HotLoader extends ClassLoader {
         return false;
     }
 
-    public static boolean isHotFile(File file){
+    public boolean isHotFile(File file){
         return file.exists() && isHotClass(toClassName(file));
     }
 
@@ -114,6 +114,9 @@ public class HotLoader extends ClassLoader {
         return compileThread.submit(() -> {
             List targets = Arrays.stream(files)
                     .filter(e -> {
+                        if(true){
+                            return true;
+                        }
                         //排除掉已经编译的代码
                         File targetFile = toTargetFilePath(e);
                         return !targetFile.exists() || (targetFile.lastModified() < e.lastModified());

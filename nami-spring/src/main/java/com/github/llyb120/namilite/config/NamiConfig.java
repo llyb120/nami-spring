@@ -60,6 +60,10 @@ public class NamiConfig {
         return a();//new String[0];
     }
 
+    public List<String> springHotPackages(){
+        return a();
+    }
+
     public void easyApi(){
         EasyApi.registerMongoDB("db", null)
                 .bind("/api/mongo")

@@ -1,6 +1,8 @@
 package com.github.llyb120.namilite;
 
-public class ByteCodeLoader extends HotLoader {
+import com.github.llyb120.namilite.hotswap.NamiHotLoader;
+
+public class ByteCodeLoader extends NamiHotLoader {
 
     private String clzName;
     private byte[] bytes;

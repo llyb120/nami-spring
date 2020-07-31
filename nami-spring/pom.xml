@@ -12,7 +12,7 @@
 
     <groupId>com.github.llyb120</groupId>
     <artifactId>nami-spring</artifactId>
-    <version>0.0.16</version>
+    <version>0.0.17</version>
 
 
     <dependencies>

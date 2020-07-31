@@ -5,16 +5,17 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.watchers.DelayWatcher;
-import cn.hutool.core.util.ZipUtil;
 
-import com.github.llyb120.json.Json;
 import com.github.llyb120.namilite.ByteCodeLoader;
-import com.github.llyb120.namilite.HotLoader;
+import com.github.llyb120.namilite.config.NamiConfig;
+import com.github.llyb120.namilite.hotswap.NamiHotLoader;
 import com.github.llyb120.namilite.boost.V20Auto;
-import com.github.llyb120.namilite.core.Async;
+import com.github.llyb120.namilite.hotswap.SpringHotSwap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
 public class NamiLite {
@@ -41,18 +43,26 @@ public class NamiLite {
         env = _env;
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    NamiConfig namiConfig(){
+        return new NamiConfig();
+    }
+
+    public boolean isDev(){
+        String path = NamiHotLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        isDev = !path.contains(".jar!");
+        return isDev;
+    }
+
     @Autowired
     public void setContext(ApplicationContext _context) {
         context = _context;
 
-        String path = HotLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        isDev = !path.contains(".jar!");
-
         String osName = System.getProperty("os.name");
         isWin = osName.toLowerCase().startsWith("windows");
 
-
-        if(!isDev){
+        if(!isDev()){
             /**
              * 暂时不需要动态编译
              */
@@ -101,10 +111,10 @@ public class NamiLite {
         }
     }
 
-    private volatile boolean inWatching = false;
-    private Set<String> changedFile = new ConcurrentHashSet<>();
+//    private volatile boolean inWatching = false;
     private void watch(){
-        WatchMonitor monitor = WatchMonitor.createAll(HotLoader.src, new SimpleWatcher(){
+        WatchMonitor monitor = WatchMonitor.createAll(NamiHotLoader.src, new SimpleWatcher(){
+
             @Override
             public void onCreate(WatchEvent<?> event, Path currentPath) {
                 Path p = (Path) event.context();
@@ -112,43 +122,21 @@ public class NamiLite {
                 if(Files.isDirectory(p)){
                     return;
                 }
-                if(!inWatching){
-                    inWatching = true;
-                    Async.execute(() -> {
-                        try {
-                            Thread.sleep(100);
-                            System.out.println(Json.stringify(changedFile));
-                            HotLoader.compile(
-                                    changedFile.stream()
-                                            .map(File::new)
-                                            //过滤掉不热加载的文件
-                                            .filter(HotLoader::isHotFile)
-                                            .toArray(File[]::new)
-                            );
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            changedFile.clear();
-                            inWatching = false;
-                        }
-                    });
-                }
                 String realpath = p.toString();
                 if(realpath.endsWith("~")){
                     realpath = realpath.substring(0, realpath.length() - 1);
                 }
-                changedFile.add(realpath);
+                SpringHotSwap.startCompile(context, new File(realpath));
             }
-
 
         });
         monitor.setMaxDepth(10);
         monitor.start();
-        System.out.println(String.format("watch %s to auto compile, target dir is %s", HotLoader.src, HotLoader.target));
+        System.out.println(String.format("watch %s to auto compile, target dir is %s", NamiHotLoader.src, NamiHotLoader.target));
     }
 
     private void watchResource() {
-        WatchMonitor monitor = WatchMonitor.createAll(HotLoader.resource, new DelayWatcher(new SimpleWatcher() {
+        WatchMonitor monitor = WatchMonitor.createAll(NamiHotLoader.resource, new DelayWatcher(new SimpleWatcher() {
             @Override
             public void onCreate(WatchEvent<?> event, Path currentPath) {
                 Path p = (Path) event.context();
@@ -161,7 +149,7 @@ public class NamiLite {
                 if(realpath.endsWith("~")){
                     realpath = realpath.substring(0, realpath.length() - 1);
                 }
-                File targetFile = new File(HotLoader.target, realpath.replace(HotLoader.resource, ""));
+                File targetFile = new File(NamiHotLoader.target, realpath.replace(NamiHotLoader.resource, ""));
                 FileUtil.copy(new File(realpath), targetFile, true);
             }
         },100));
@@ -309,7 +297,7 @@ public class NamiLite {
         Class clzz;
         try{
             if(isDev){
-                loader = new HotLoader();
+                loader = new NamiHotLoader();
                 clzz = loader.loadClass(className);
                 return Bean(clzz);
             } else {
@@ -327,7 +315,7 @@ public class NamiLite {
         try{
             ClassLoader loader;
             if(isDev){
-                loader = new HotLoader();
+                loader = new NamiHotLoader();
                 return clzz = loader.loadClass(className);
             } else {
                 loader = NamiSpringController.class.getClassLoader();
