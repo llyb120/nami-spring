@@ -103,3 +103,8 @@ public class test extends NamiBaseController{
 * 被加载的组件中不能出现 @Bean 等初始化的东西
 * 如果需要 @Autowired 注入，则需要使用 @Resource 代替
 * 被加载的组件的包或者父包必须在 namiConfig 中的 springHotPackages 中声明
+
+## 针对Lombok的热加载
+自0.0.19起，已经可以支持对lombok的热加载
+* 启动时需要加上 -javaagent:lib/lombok.jar=ECJ 
+* lombok.jar的版本需要和pom中引入的lombok版本一致，推荐1.16.10，也可以直接下本项目中lib/lombok.jar来使用

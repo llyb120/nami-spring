@@ -38,7 +38,7 @@ public class TestController {
 //            declaredMethod.setAccessible(true);
 //            declaredMethod.invoke(testService);
 //        }
-        return tService.foo();
+        return tService.foo() + new TestLombok(1,2, "fuc222k","f", "do not fuck").getFuck();
 //        testService.test();
 //        return "fuck-" + a + "-" + b + "-" + ttt;
     }

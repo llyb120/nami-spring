@@ -12,7 +12,7 @@
 
     <groupId>com.github.llyb120</groupId>
     <artifactId>nami-spring</artifactId>
-    <version>0.0.17</version>
+    <version>0.0.19</version>
 
 
     <dependencies>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>com.github.llyb120</groupId>
             <artifactId>json</artifactId>
-            <version>1.1.11</version>
+            <version>1.1.14</version>
         </dependency>
 
         <dependency>
@@ -68,6 +68,14 @@
             <version>3.11.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jdt/ecj -->
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>ecj</artifactId>
+            <version>3.22.0</version>
+        </dependency>
+
 
     </dependencies>
 

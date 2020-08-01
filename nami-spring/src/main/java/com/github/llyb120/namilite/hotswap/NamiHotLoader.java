@@ -4,6 +4,7 @@ package com.github.llyb120.namilite.hotswap;
 import cn.hutool.core.io.FileUtil;
 import com.github.llyb120.json.Arr;
 import com.github.llyb120.json.Json;
+import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -34,7 +35,8 @@ public class NamiHotLoader extends ClassLoader {
         target = src + "/../../../target/classes";
     }
 
-    private static JavaCompiler javac = ToolProvider.getSystemJavaCompiler(); //new EcjCompiler();
+//    private static JavaCompiler javac = ToolProvider.getSystemJavaCompiler(); //new EcjCompiler();
+    private static JavaCompiler javac = new EclipseCompiler();
     private static ClassLoader defaultLoader = NamiHotLoader.class.getClassLoader();
 
 
@@ -127,8 +129,8 @@ public class NamiHotLoader extends ClassLoader {
                 return;
             }
             Arr<?> args = a(
-//                    "-noExit",
-//                    "-proceedOnError",
+                    "-noExit",
+                    "-proceedOnError",
                     "-parameters",
                     "-nowarn",
                     "-source",
