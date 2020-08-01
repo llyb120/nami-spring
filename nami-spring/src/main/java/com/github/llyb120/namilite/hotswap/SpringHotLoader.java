@@ -9,6 +9,9 @@ import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 public class SpringHotLoader extends NamiHotLoader{
     @Override
     public boolean isHotClass(String clzName) {
+        if(super.isHotClass(clzName)){
+            return true;
+        }
         for (String hotPackage : namiConfig.springHotPackages()) {
             if(clzName.startsWith(hotPackage)) {
                 return true;

@@ -123,8 +123,8 @@ public class NamiLite {
                     return;
                 }
                 String realpath = p.toString();
-                if(realpath.endsWith("~")){
-                    realpath = realpath.substring(0, realpath.length() - 1);
+                if(realpath.contains("~")){
+                    realpath = realpath.replace("~","");
                 }
                 SpringHotSwap.startCompile(context, new File(realpath));
             }

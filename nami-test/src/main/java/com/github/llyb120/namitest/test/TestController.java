@@ -38,9 +38,14 @@ public class TestController {
 //            declaredMethod.setAccessible(true);
 //            declaredMethod.invoke(testService);
 //        }
-        return tService.foo() + "oh shit";
+        return tService.foo();
 //        testService.test();
 //        return "fuck-" + a + "-" + b + "-" + ttt;
+    }
+
+    @RequestMapping("/shit")
+    public Object test2(){
+        return "im not shit";
     }
 
 }

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class TService {
     public String foo(){
-        return "fuckheidf";
+        return "bar";
     }
 }

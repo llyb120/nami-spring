@@ -80,18 +80,18 @@ public class SpringHotSwap {
                 return e != null &&
                     (e.getAnnotation(RequestMapping.class) != null || e.getAnnotation(Service.class) != null);
             })
-            .sorted(new Comparator<Class<?>>() {
-                @Override
-                public int compare(Class<?> o1, Class<?> o2) {
-                    if (o1.getAnnotation(Service.class) != null) {
-                        return -1;
-                    } else if (o1.getAnnotation(RequestMapping.class) != null) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            })
+//            .sorted(new Comparator<Class<?>>() {
+//                @Override
+//                public int compare(Class<?> o1, Class<?> o2) {
+//                    if (o1.getAnnotation(Service.class) != null) {
+//                        return -1;
+//                    } else if (o1.getAnnotation(RequestMapping.class) != null) {
+//                        return 1;
+//                    } else {
+//                        return 0;
+//                    }
+//                }
+//            })
             .forEachOrdered(e -> {
                 if (e.getAnnotation(Service.class) != null) {
                     reRegisterService(context, defaultListableBeanFactory, e);
@@ -107,7 +107,7 @@ public class SpringHotSwap {
                 try {
                     Thread.sleep(66);
                     File[] files = changedFile.stream()
-                        .filter(e -> namiHotLoader.isHotFile(e) || springHotLoader.isHotFile(e))
+                        .filter(springHotLoader::isHotFile)
                         .toArray(File[]::new);
                     NamiHotLoader.compile(
                         files

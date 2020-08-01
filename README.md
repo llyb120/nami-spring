@@ -27,6 +27,15 @@ public NamiConfig namiConfig(){
                 "com.github.llyb120.stock.ctrl"
             ) ;
         }
+        
+        //spring热加载
+        @Override
+        public List<String> springHotPackages() {
+            return a(
+                "com.github.llyb120.namitest.test"
+            );
+        }
+
 
         //0.0.8 新增，现在支持对多个路由和包的映射
         @Override
@@ -87,3 +96,10 @@ public class test extends NamiBaseController{
 ## 授权
 * 你可以使用原本spring的过滤器来实现授权
 * 如果你想，你可以在NamiConfig中重写namiAuth来提供一个用于授权的对象, nami会在所有的请求中验证授权，如果你不需要，请使用UnLogin注解
+
+## 针对Spring的热加载
+自0.0.17起，已经可以支持spring component的热加载，需满足以下条件
+* 被加载的组件必须有 @RequestMapping 或 @Service 注解
+* 被加载的组件中不能出现 @Bean 等初始化的东西
+* 如果需要 @Autowired 注入，则需要使用 @Resource 代替
+* 被加载的组件的包或者父包必须在 namiConfig 中的 springHotPackages 中声明
