@@ -12,11 +12,18 @@ public class SpringHotLoader extends NamiHotLoader{
         if(super.isHotClass(clzName)){
             return true;
         }
+        boolean maybe = false;
         for (String hotPackage : namiConfig.springHotPackages()) {
-            if(clzName.startsWith(hotPackage)) {
-                return true;
+            if(hotPackage.startsWith("!")){
+                hotPackage = hotPackage.substring(1);
+                if (clzName.startsWith(hotPackage)) {
+                    maybe = false;
+                    break;
+                }
+            } else if(clzName.startsWith(hotPackage)) {
+                maybe = true;
             }
         }
-        return false;
+        return maybe;
     }
 }

@@ -15,6 +15,7 @@ import org.beetl.sql.core.DSTransactionManager;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import java.util.Map;
 import static com.github.llyb120.json.Json.o;
 import static com.github.llyb120.namilite.init.NamiBean.*;
 
+@ApiIgnore
 @RequestMapping("/nami")
 @RestController
 public class NamiSpringController {

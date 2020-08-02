@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.github.llyb120</groupId>
             <artifactId>nami-spring</artifactId>
-            <version>0.0.19</version>
+            <version>0.0.20</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
@@ -35,6 +35,7 @@
             <artifactId>lombok</artifactId>
             <version>1.16.10</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

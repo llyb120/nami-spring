@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import javax.servlet.Filter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -34,6 +35,7 @@ import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 public class SpringHotSwap {
 
     public volatile static Future compileTask = null;
+    public volatile static Future springReloadTask = null;
     private static NamiHotLoader namiHotLoader = new NamiHotLoader();
     private static SpringHotLoader springHotLoader = new SpringHotLoader();
 //    public static ReentrantLock lock = new ReentrantLock();
@@ -41,7 +43,12 @@ public class SpringHotSwap {
 
     private static Set<File> getSpringHotFiles() {
         Set<File> set = new HashSet<>();
+        Set<String> removeAble = new HashSet<>();
         for (String springHotPackage : namiConfig.springHotPackages()) {
+            if(springHotPackage.startsWith("!")){
+                removeAble.add(new File(springHotPackage.substring(1)).getAbsolutePath());
+                continue;
+            }
             try {
                 Files.walkFileTree(Paths.get(NamiHotLoader.src + "/" + springHotPackage.replaceAll("\\.", "/")), new SimpleFileVisitor<Path>() {
                     @Override
@@ -52,6 +59,17 @@ public class SpringHotSwap {
                 });
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+        Iterator<File> it = set.iterator();
+        while(it.hasNext()){
+            File item = it.next();
+            String path = item.getAbsolutePath();
+            for (String s : removeAble) {
+                if(s.contains(path)){
+                    it.remove();
+                    break;
+                }
             }
         }
         return set;
@@ -78,7 +96,7 @@ public class SpringHotSwap {
             })
             .filter(e -> {
                 return e != null &&
-                    (e.getAnnotation(RequestMapping.class) != null || e.getAnnotation(Service.class) != null);
+                    (e.getAnnotation(RequestMapping.class) != null || e.getAnnotation(Service.class) != null); //|| e == Filter.class);
             })
 //            .sorted(new Comparator<Class<?>>() {
 //                @Override
@@ -93,6 +111,9 @@ public class SpringHotSwap {
 //                }
 //            })
             .forEachOrdered(e -> {
+//                if(e == Filter.class){
+//                    reRegisterService(context, defaultListableBeanFactory, e);
+//                } else
                 if (e.getAnnotation(Service.class) != null) {
                     reRegisterService(context, defaultListableBeanFactory, e);
                 } else {
@@ -107,19 +128,24 @@ public class SpringHotSwap {
                 try {
                     Thread.sleep(66);
                     File[] files = changedFile.stream()
-                        .filter(springHotLoader::isHotFile)
+                        .filter(namiHotLoader::isHotFile)
                         .toArray(File[]::new);
                     NamiHotLoader.compile(
                         files
                     );
-                    refreshSpringBeans(context);
-                    System.out.println("compiled and reload success");
+//                    System.out.println("compiled and reload success");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
                     changedFile.clear();
                     compileTask = null;
                 }
+            });
+        }
+        if (springReloadTask == null) {
+            springReloadTask = Async.execute(() -> {
+                refreshSpringBeans(context);
+                springReloadTask = null;
             });
         }
         changedFile.add(file);

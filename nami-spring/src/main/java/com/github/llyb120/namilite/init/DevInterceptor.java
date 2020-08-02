@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.github.llyb120.namilite.hotswap.SpringHotSwap.compileTask;
+import static com.github.llyb120.namilite.hotswap.SpringHotSwap.springReloadTask;
 
 /**
  * @Author: Administrator
@@ -29,8 +30,8 @@ public class DevInterceptor implements WebMvcConfigurer {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                if(compileTask != null){
-                    compileTask.get();
+                if(springReloadTask != null){
+                    springReloadTask.get();
                 }
                 return true;
             }
