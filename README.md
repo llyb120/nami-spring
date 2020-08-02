@@ -104,6 +104,8 @@ public class test extends NamiBaseController{
 * 如果需要 @Autowired 注入，则需要使用 @Resource 代替
 * 被加载的组件的包或者父包必须在 namiConfig 中的 springHotPackages 中声明
 
+自0.0.20起，可以用!表示被排除热加载的包，例如同时具有com.demo.test和!com.demo.test.Test，则表示test包下的类全部热加载，但是排除Test类
+
 ## 针对Lombok的热加载
 自0.0.19起，已经可以支持对lombok的热加载
 * 启动时需要加上 -javaagent:lib/lombok.jar=ECJ 
