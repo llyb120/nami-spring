@@ -53,7 +53,11 @@ public class SpringHotSwap {
                 Files.walkFileTree(Paths.get(NamiHotLoader.src + "/" + springHotPackage.replaceAll("\\.", "/")), new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        set.add(file.toFile());
+                        File _file = file.toFile();
+                        if (_file.getName().contains("~")) {
+                            _file = new File(_file.getAbsolutePath().replaceAll("~", ""));
+                        }
+                        set.add(_file);
                         return super.visitFile(file, attrs);
                     }
                 });
