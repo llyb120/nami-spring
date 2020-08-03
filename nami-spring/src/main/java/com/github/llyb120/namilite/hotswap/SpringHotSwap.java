@@ -142,12 +142,16 @@ public class SpringHotSwap {
                 }
             });
         }
-        if (springReloadTask == null) {
-            springReloadTask = Async.execute(() -> {
+        Async.execute(() -> {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+            if (springReloadTask == null) {
                 refreshSpringBeans(context);
                 springReloadTask = null;
-            });
-        }
+            }
+        });
         changedFile.add(file);
     }
 
