@@ -38,14 +38,14 @@ public class SpringHotSwap {
     public volatile static Future springReloadTask = null;
     private static NamiHotLoader namiHotLoader = new NamiHotLoader();
     private static SpringHotLoader springHotLoader = new SpringHotLoader();
-//    public static ReentrantLock lock = new ReentrantLock();
+    //    public static ReentrantLock lock = new ReentrantLock();
     private static Set<File> changedFile = new ConcurrentHashSet<>();
 
     private static Set<File> getSpringHotFiles() {
         Set<File> set = new HashSet<>();
         Set<String> removeAble = new HashSet<>();
         for (String springHotPackage : namiConfig.springHotPackages()) {
-            if(springHotPackage.startsWith("!")){
+            if (springHotPackage.startsWith("!")) {
                 removeAble.add(new File(springHotPackage.substring(1)).getAbsolutePath());
                 continue;
             }
@@ -62,11 +62,11 @@ public class SpringHotSwap {
             }
         }
         Iterator<File> it = set.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             File item = it.next();
             String path = item.getAbsolutePath();
             for (String s : removeAble) {
-                if(s.contains(path)){
+                if (s.contains(path)) {
                     it.remove();
                     break;
                 }
@@ -77,7 +77,7 @@ public class SpringHotSwap {
 
     public static void refreshSpringBeans(ApplicationContext context) {
         Set<File> springFiles = getSpringHotFiles();
-        if(springFiles.isEmpty()){
+        if (springFiles.isEmpty()) {
             return;
         }
         RequestMappingHandlerMapping requestMappingHandlerMapping = (RequestMappingHandlerMapping) context.getBean("requestMappingHandlerMapping");
@@ -142,16 +142,16 @@ public class SpringHotSwap {
                 }
             });
         }
-        Async.execute(() -> {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-            }
-            if (springReloadTask == null) {
+        if (springReloadTask == null) {
+            Async.execute(() -> {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
                 refreshSpringBeans(context);
                 springReloadTask = null;
-            }
-        });
+            });
+        }
         changedFile.add(file);
     }
 
