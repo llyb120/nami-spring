@@ -143,7 +143,7 @@ public class SpringHotSwap {
             });
         }
         if (springReloadTask == null) {
-            Async.execute(() -> {
+            springReloadTask = Async.execute(() -> {
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
