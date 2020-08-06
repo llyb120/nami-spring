@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.Filter;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -89,6 +90,8 @@ public class SpringHotSwap {
 
         //对spring进行热加载
         SpringHotLoader loader = new SpringHotLoader();
+        //卸载所有符合条件的控制器
+        unloadControllers(context, requestMappingHandlerMapping, defaultListableBeanFactory);
         springFiles.stream()
             .map(e -> {
                 try {
@@ -159,6 +162,33 @@ public class SpringHotSwap {
         changedFile.add(file);
     }
 
+    private static void unloadControllers(ApplicationContext context, RequestMappingHandlerMapping requestMappingHandlerMapping, DefaultListableBeanFactory defaultListableBeanFactory){
+        Method getMappingForMethod =ReflectionUtils.findMethod(RequestMappingHandlerMapping.class, "getMappingForMethod",Method.class,Class.class);
+        //设置私有属性为可见
+        getMappingForMethod.setAccessible(true);
+        for (String s : defaultListableBeanFactory.getBeanNamesForAnnotation(RequestMapping.class)) {
+            Object bean = defaultListableBeanFactory.getBean(s);
+            if(!springHotLoader.isHotClass(bean.getClass().getName())){
+                continue;
+            }
+            for (Method method : bean.getClass().getDeclaredMethods()) {
+                if(method.getAnnotation(RequestMapping.class) != null){
+                    RequestMappingInfo mappingInfo = null;
+                    try {
+                        mappingInfo = (RequestMappingInfo) getMappingForMethod.invoke(requestMappingHandlerMapping, method,bean.getClass());
+                        requestMappingHandlerMapping.unregisterMapping(mappingInfo);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            try{
+                defaultListableBeanFactory.removeBeanDefinition(s);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
 
     private static void reRegisterService(ApplicationContext context, DefaultListableBeanFactory defaultListableBeanFactory, Class clz) {
         String ctrlName = clz.getSimpleName().substring(0, 1).toLowerCase() + clz.getSimpleName().substring(1);
@@ -175,41 +205,41 @@ public class SpringHotSwap {
 
     private static void reRegisterController(ApplicationContext context, RequestMappingHandlerMapping requestMappingHandlerMapping, DefaultListableBeanFactory defaultListableBeanFactory, Class clz) {
         try {
-            String ctrlName = ctrlNames.get(clz.getSimpleName());
-            if (ctrlName == null) {
+            String ctrlName = null;//ctrlNames.get(clz.getSimpleName());
+//            if (ctrlName == null) {
                 ctrlName = clz.getSimpleName().substring(0, 1).toLowerCase() + clz.getSimpleName().substring(1);
-            }
-            if (context.containsBean(ctrlName)) {
-                try {
-                    BeanDefinition definition = defaultListableBeanFactory.getBeanDefinition(ctrlName);
-                    Class targetClass = context.getClassLoader().loadClass(definition.getBeanClassName());
-                    ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
-                        @Override
-                        public void doWith(Method method) {
-                            Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);
-                            try {
-                                Method createMappingMethod = RequestMappingHandlerMapping.class.
-                                    getDeclaredMethod("getMappingForMethod", Method.class, Class.class);
-                                createMappingMethod.setAccessible(true);
-                                RequestMappingInfo requestMappingInfo = (RequestMappingInfo)
-                                    createMappingMethod.invoke(requestMappingHandlerMapping, specificMethod, targetClass);
-                                if (requestMappingInfo != null) {
-                                    requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }, ReflectionUtils.USER_DECLARED_METHODS);
-
-                    defaultListableBeanFactory.removeBeanDefinition(ctrlName);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            //生成新类名
+//            }
+//            if (context.containsBean(ctrlName)) {
+//                try {
+//                    BeanDefinition definition = defaultListableBeanFactory.getBeanDefinition(ctrlName);
+//                    Class targetClass = context.getClassLoader().loadClass(definition.getBeanClassName());
+//                    ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
+//                        @Override
+//                        public void doWith(Method method) {
+//                            Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);
+//                            try {
+//                                Method createMappingMethod = RequestMappingHandlerMapping.class.
+//                                    getDeclaredMethod("getMappingForMethod", Method.class, Class.class);
+//                                createMappingMethod.setAccessible(true);
+//                                RequestMappingInfo requestMappingInfo = (RequestMappingInfo)
+//                                    createMappingMethod.invoke(requestMappingHandlerMapping, specificMethod, targetClass);
+//                                if (requestMappingInfo != null) {
+//                                    requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
+//                                }
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }, ReflectionUtils.USER_DECLARED_METHODS);
+//
+//                    defaultListableBeanFactory.removeBeanDefinition(ctrlName);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            //生成新类名
             String clzFakeName = "namiDev_" + IdUtil.objectId();
-            ctrlNames.put(clz.getSimpleName(), clzFakeName);
+//            ctrlNames.put(clz.getSimpleName(), clzFakeName);
             // 这里通过builder直接生成了mycontrooler的definition，然后注册进去
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(clz);
 //                                                beanDefinitionBuilder.addPropertyValue("testService", context.getBean("testService"));
