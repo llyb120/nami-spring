@@ -42,7 +42,7 @@ public class SpringHotSwap {
     private static NamiHotLoader namiHotLoader = new NamiHotLoader();
     private static SpringHotLoader springHotLoader = new SpringHotLoader();
     //    public static ReentrantLock lock = new ReentrantLock();
-    private static Set<File> changedFile = new ConcurrentHashSet<>();
+    private static volatile Set<File> changedFile = new ConcurrentHashSet<>();
 
     private static Set<File> getSpringHotFiles() {
         Set<File> set = new HashSet<>();
@@ -155,10 +155,18 @@ public class SpringHotSwap {
             springReloadTask = Async.execute(() -> {
                 try {
                     Thread.sleep(50);
+                    HashSet<File> cpSet = new HashSet<>(changedFile);
+                    if(
+                        cpSet.stream().noneMatch(e -> springHotLoader.isHotFile(e))
+                    ){
+                        return;
+                    }
+                    refreshSpringBeans(context);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    springReloadTask = null;
                 }
-                refreshSpringBeans(context);
-                springReloadTask = null;
             });
         }
         changedFile.add(file);
