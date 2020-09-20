@@ -31,7 +31,7 @@ public class TestController {
 
     @RequestMapping("/abc")
     public Object ttt(String a, String b) throws InvocationTargetException, IllegalAccessException {
-        Test.test();//////dfdfd
+        Test.test();//////dfdfddfffffdfdffffcc
         testService.test();
 //        Object testService = context.getBean("testService");
 //        for (Method declaredMethod : testService.getClass().getDeclaredMethods()) {

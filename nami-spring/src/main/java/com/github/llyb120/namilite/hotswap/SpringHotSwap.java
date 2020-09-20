@@ -1,10 +1,14 @@
 package com.github.llyb120.namilite.hotswap;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
 import com.github.llyb120.json.Json;
 import com.github.llyb120.namilite.core.Async;
 import com.github.llyb120.namilite.init.NamiLite;
+import com.github.llyb120.namilite.init.NamiProperties;
+import javafx.application.Application;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -26,16 +30,25 @@ import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.github.llyb120.json.Json.$expand;
+import static com.github.llyb120.json.Json.a;
 import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 
 /**
  * @Author: Administrator
  * @Date: 2020/7/31 15:57
  */
+@Service
 public class SpringHotSwap {
+    @Autowired
+    NamiProperties namiProperties;
+    @Autowired
+    ApplicationContext context;
 
     public volatile static Future compileTask = null;
     public volatile static Future springReloadTask = null;
@@ -44,10 +57,19 @@ public class SpringHotSwap {
     //    public static ReentrantLock lock = new ReentrantLock();
     private static volatile Set<File> changedFile = new ConcurrentHashSet<>();
 
-    private static Set<File> getSpringHotFiles() {
+    public static ReentrantLock lock = new ReentrantLock();
+    public static Condition condition = lock.newCondition();
+    public static Condition resCondition = lock.newCondition();
+    
+
+    private Set<File> getSpringHotFiles(boolean onlyReturnChanged) {
         Set<File> set = new HashSet<>();
         Set<String> removeAble = new HashSet<>();
-        for (String springHotPackage : namiConfig.springHotPackages()) {
+        List<String> pkgs = namiProperties.getSpringHotPackages();
+        if (pkgs.isEmpty()) {
+            pkgs = namiConfig.springHotPackages();
+        }
+        for (String springHotPackage : pkgs) {
             if (springHotPackage.startsWith("!")) {
                 removeAble.add(new File(springHotPackage.substring(1)).getAbsolutePath());
                 continue;
@@ -60,7 +82,17 @@ public class SpringHotSwap {
                         if (_file.getName().contains("~")) {
                             _file = new File(_file.getAbsolutePath().replaceAll("~", ""));
                         }
-                        set.add(_file);
+                        if(onlyReturnChanged){
+                            //得到编译后的文件
+                            File targetFile = new File(_file.getAbsolutePath()
+                                .replace(NamiHotLoader.src, NamiHotLoader.target)
+                                .replaceAll("\\.java", ".class"));
+                            if(!targetFile.exists() || _file.lastModified() > targetFile.lastModified()){
+                                set.add(_file);
+                            }
+                        } else {
+                            set.add(_file);
+                        }
                         return super.visitFile(file, attrs);
                     }
                 });
@@ -82,11 +114,7 @@ public class SpringHotSwap {
         return set;
     }
 
-    public static void refreshSpringBeans(ApplicationContext context) {
-        Set<File> springFiles = getSpringHotFiles();
-        if (springFiles.isEmpty()) {
-            return;
-        }
+    public void refreshSpringBeans(Set<File> springFiles) {
         RequestMappingHandlerMapping requestMappingHandlerMapping = (RequestMappingHandlerMapping) context.getBean("requestMappingHandlerMapping");
         DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) context.getAutowireCapableBeanFactory();
 
@@ -131,6 +159,16 @@ public class SpringHotSwap {
             });
     }
 
+    public void refreshSpringBeans() {
+        Set<File> springFiles = getSpringHotFiles(false);
+        if (springFiles.isEmpty()) {
+            return;
+        }
+        refreshSpringBeans(springFiles);
+
+    }
+
+    @Deprecated
     public static void startCompile(ApplicationContext context, File file) {
         if (compileTask == null) {
             compileTask = Async.execute(() -> {
@@ -151,25 +189,42 @@ public class SpringHotSwap {
                 }
             });
         }
-        if (springReloadTask == null) {
-            springReloadTask = Async.execute(() -> {
-                try {
-                    Thread.sleep(50);
-                    HashSet<File> cpSet = new HashSet<>(changedFile);
-                    if(
-                        cpSet.stream().noneMatch(e -> springHotLoader.isHotFile(e))
-                    ){
-                        return;
-                    }
-                    refreshSpringBeans(context);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    springReloadTask = null;
-                }
-            });
-        }
+
+//        if (springReloadTask == null) {
+//            springReloadTask = Async.execute(() -> {
+//                try {
+//                    Thread.sleep(50);
+//                    HashSet<File> cpSet = new HashSet<>(changedFile);
+//                    if(
+//                        cpSet.stream().noneMatch(e -> springHotLoader.isHotFile(e))
+//                    ){
+//                        return;
+//                    }
+//                    refreshSpringBeans(context);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    springReloadTask = null;
+//                }
+//            });
+//        }
         changedFile.add(file);
+    }
+    
+    public void startCompile2() throws ExecutionException, InterruptedException {
+        try{
+            Set<File> files = getSpringHotFiles(true);
+            if(files.isEmpty()){
+                return;
+            }
+//            System.out.println(files);
+            NamiHotLoader.compile(ArrayUtil.toArray(files, File.class)).get();
+            refreshSpringBeans();
+//            System.out.println("bean refreshed");
+        } finally {
+            resCondition.signalAll();
+//            System.out.println("res notifyed");
+        }
     }
 
     private static void unloadControllers(ApplicationContext context, RequestMappingHandlerMapping requestMappingHandlerMapping, DefaultListableBeanFactory defaultListableBeanFactory){

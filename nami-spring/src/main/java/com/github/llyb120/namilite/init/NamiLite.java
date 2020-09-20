@@ -6,14 +6,18 @@ import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.watchers.DelayWatcher;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.github.llyb120.namilite.ByteCodeLoader;
 import com.github.llyb120.namilite.config.NamiConfig;
+import com.github.llyb120.namilite.core.Async;
 import com.github.llyb120.namilite.hotswap.NamiHotLoader;
 import com.github.llyb120.namilite.boost.V20Auto;
 import com.github.llyb120.namilite.hotswap.SpringHotSwap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,9 +30,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
+@EnableConfigurationProperties(NamiProperties.class)
 public class NamiLite {
     public static Environment env;
     public static ApplicationContext context;
@@ -37,6 +43,11 @@ public class NamiLite {
     public static String jarPath;
     public static File jarDir;
     public static String cp;
+
+    @Autowired
+    SpringHotSwap springHotSwap;
+    @Autowired
+    NamiProperties namiProperties;
 
     @Autowired
     public void setEnv(Environment _env) {
@@ -107,11 +118,13 @@ public class NamiLite {
 //            System.out.println(cp);
         } else {
             watch();
+            watch2();
             watchResource();
         }
     }
 
 //    private volatile boolean inWatching = false;
+    @Deprecated
     private void watch(){
         WatchMonitor monitor = WatchMonitor.createAll(NamiHotLoader.src, new SimpleWatcher(){
 
@@ -133,6 +146,20 @@ public class NamiLite {
         monitor.setMaxDepth(10);
         monitor.start();
         System.out.println(String.format("watch %s to auto compile, target dir is %s", NamiHotLoader.src, NamiHotLoader.target));
+    }
+
+
+    private void watch2(){
+        Async.execute(() -> {
+;            while(true){
+                SpringHotSwap.lock.lock();
+//                System.out.println("waiting");
+                SpringHotSwap.condition.await(namiProperties.getCompileWaitSeconds(), TimeUnit.SECONDS);
+//                System.out.println("wait over");
+                springHotSwap.startCompile2();
+                SpringHotSwap.lock.unlock();
+            }
+        });
     }
 
     private void watchResource() {

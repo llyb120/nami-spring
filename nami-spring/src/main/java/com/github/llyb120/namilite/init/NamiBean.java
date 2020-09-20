@@ -13,13 +13,16 @@ public class NamiBean {
     public static NamiConfig namiConfig;
     public static NamiAuth namiAuth;
     public static volatile boolean hasBeetlSql = false;
+    public static NamiProperties namiProperties;
 
     @Autowired
     public void set(
-            NamiConfig config
+            NamiConfig config,
+            NamiProperties namiProperties
     ){
         namiConfig = config;
         namiAuth = config.namiAuth();
+        NamiBean.namiProperties = namiProperties;
 
         //init beetl
         try{
