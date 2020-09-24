@@ -8,7 +8,10 @@ import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -112,43 +115,88 @@ public class NamiHotLoader extends ClassLoader {
 
     private static ExecutorService compileThread = Executors.newSingleThreadExecutor();
 
-    public static Future compile(File... files) {
-        return compileThread.submit(() -> {
-            List targets = Arrays.stream(files)
-                    .filter(e -> {
-                        if(true){
-                            return true;
-                        }
-                        //排除掉已经编译的代码
-                        File targetFile = toTargetFilePath(e);
-                        return !targetFile.exists() || (targetFile.lastModified() < e.lastModified());
-                    })
-                    .map(File::getAbsolutePath)
-                    .collect(Collectors.toList());
-            if (targets.isEmpty()) {
-                return;
-            }
-            Arr<?> args = a(
-                    "-noExit",
-                    "-proceedOnError",
-                    "-parameters",
-                    "-nowarn",
-                    "-source",
-                    "1.8",
-                    "-sourcepath",
-                    src,
-                    "-d",
-                    target
+    /**
+     *
+     * @param files
+     * @return 编译失败的文件
+     */
+    public static List<File> compileSync(File... files){
+        List<File> targets = Arrays.stream(files)
+            .filter(e -> {
+                if(true){
+                    return true;
+                }
+                //排除掉已经编译的代码
+                File targetFile = toTargetFilePath(e);
+                return !targetFile.exists() || (targetFile.lastModified() < e.lastModified());
+            })
+            .collect(Collectors.toList());
+        if (targets.isEmpty()) {
+            return a();
+        }
+        Arr<?> args = a(
+            "-noExit",
+            "-proceedOnError",
+            "-parameters",
+            "-nowarn",
+            "-source",
+            "1.8",
+            "-sourcepath",
+            src,
+            "-d",
+            target
 //            files
 //            file.getAbsolutePath()
-            );
-            args.addAll(targets);
+        );
+        args.addAll(
+            (List) targets.stream().map(e -> e.getAbsolutePath()).distinct().collect(Collectors.toList())
+        );
+        int status = javac.run(
+            null,
+            null,
+            new ByteArrayOutputStream(),
+            args.toArray(new String[0])
+        );
+
+        return status == 0 ? a() : targets;
+    }
+
+    @Deprecated
+    public static void initCompiler(){
+        File file = null;
+        try {
+            file = File.createTempFile("test", ".java");
+            FileUtil.writeString(String.format("public class %s{public static void main(String[] args){} }", file.getName().replace(".java", "")), file, StandardCharsets.UTF_8);
+            Arr<?> args = a(
+                "-noExit",
+                "-proceedOnError",
+                "-parameters",
+                "-nowarn",
+                "-source",
+                "1.8",
+                "-sourcepath",
+                src,
+                "-d",
+                target,
+                file.getAbsolutePath()
+                );
             int status = javac.run(
-                    null,
-                    null,
-                    null,
-                    args.toArray(new String[0])
-            );
+                null,
+                null,
+                null,
+                args.toArray(new String[0]));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+        }
+    }
+
+    public static Future compile(File... files) {
+        return compileThread.submit(() -> {
+            compileSync(files);
         });
     }
 

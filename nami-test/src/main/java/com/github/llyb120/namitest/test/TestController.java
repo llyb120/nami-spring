@@ -46,7 +46,7 @@ public class TestController {
 
     @RequestMapping("/shit")
     public Object test2(){
-        return "im not shit";
+        return "im not shit no you are 132";
     }
 
 }

@@ -3,18 +3,13 @@ package com.github.llyb120.namilite.hotswap;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
-import com.github.llyb120.json.Json;
 import com.github.llyb120.namilite.core.Async;
-import com.github.llyb120.namilite.init.NamiLite;
 import com.github.llyb120.namilite.init.NamiProperties;
-import javafx.application.Application;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.servlet.Filter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -35,8 +29,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.github.llyb120.json.Json.$expand;
-import static com.github.llyb120.json.Json.a;
 import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 
 /**
@@ -56,11 +48,12 @@ public class SpringHotSwap {
     private static SpringHotLoader springHotLoader = new SpringHotLoader();
     //    public static ReentrantLock lock = new ReentrantLock();
     private static volatile Set<File> changedFile = new ConcurrentHashSet<>();
+    private static volatile Set<File> lastErrorFiles = new ConcurrentHashSet<>();
 
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition condition = lock.newCondition();
     public static Condition resCondition = lock.newCondition();
-    
+
 
     private Set<File> getSpringHotFiles(boolean onlyReturnChanged) {
         Set<File> set = new HashSet<>();
@@ -210,15 +203,25 @@ public class SpringHotSwap {
 //        }
         changedFile.add(file);
     }
-    
+
     public void startCompile2() throws ExecutionException, InterruptedException {
         try{
             Set<File> files = getSpringHotFiles(true);
+            if(!lastErrorFiles.isEmpty()){
+                files.addAll(lastErrorFiles);
+                lastErrorFiles.clear();
+            }
             if(files.isEmpty()){
                 return;
             }
 //            System.out.println(files);
-            NamiHotLoader.compile(ArrayUtil.toArray(files, File.class)).get();
+            List<File> failed = NamiHotLoader.compileSync(ArrayUtil.toArray(files, File.class));
+            if(!failed.isEmpty()){
+                //编译失败
+                lastErrorFiles.clear();
+                lastErrorFiles.addAll(failed);
+                return;
+            }
             refreshSpringBeans();
 //            System.out.println("bean refreshed");
         } finally {
