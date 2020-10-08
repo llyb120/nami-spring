@@ -1,13 +1,30 @@
 package com.github.llyb120.namitest;
 
+import com.github.llyb120.namilite.hotswap.Refresh;
+import com.github.llyb120.namitest.confi.TestBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 
 @SpringBootApplication
 public class NamiTestApplication {
 
+    @Refresh
+    @Bean(name = "testBean")
+    public TestBean test(){
+        return new TestBean();
+    }
+
     public static void main(String[] args) {
-        SpringApplication.run(NamiTestApplication.class, args);
+        ConfigurableApplicationContext ctx = SpringApplication.run(NamiTestApplication.class, args);
+        TestBean testBean = (TestBean) ctx.getBean("testBean");
+        testBean.test();
+        testBean = (TestBean) ctx.getBean("testBean");
+        testBean.test();
+//        SpringApplication.run(NamiTestApplication.class, args);
     }
 
 

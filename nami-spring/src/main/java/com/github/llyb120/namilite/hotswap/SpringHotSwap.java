@@ -151,6 +151,9 @@ public class SpringHotSwap {
                     reRegisterController(context, requestMappingHandlerMapping, defaultListableBeanFactory, e);
                 }
             });
+
+        //调用初始化函数
+        RefreshScope.refresh();
     }
 
     public void refreshSpringBeans() {

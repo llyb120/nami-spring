@@ -1,6 +1,9 @@
 package com.github.llyb120.namitest.test;
 
+import com.github.llyb120.namilite.hotswap.Refresh;
+import com.github.llyb120.namitest.confi.TestBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,9 @@ import java.lang.reflect.Method;
 @RequestMapping("/")
 public class TestController {
     public int d = 4;
+
+    @Resource
+    TestBean tt;
 
     @Value("${a}")
     String ttt;
@@ -46,7 +52,8 @@ public class TestController {
 
     @RequestMapping("/shit")
     public Object test2(){
-        return "im not shit no you are 132";
+        tt.test();
+        return "im not shiddt no you are 132333 ffddddf";
     }
 
 }

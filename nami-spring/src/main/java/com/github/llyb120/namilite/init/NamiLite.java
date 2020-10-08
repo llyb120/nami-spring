@@ -1,21 +1,20 @@
 package com.github.llyb120.namilite.init;
 
-import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.watchers.DelayWatcher;
 
-import cn.hutool.core.thread.ThreadUtil;
 import com.github.llyb120.namilite.ByteCodeLoader;
 import com.github.llyb120.namilite.config.NamiConfig;
 import com.github.llyb120.namilite.core.Async;
 import com.github.llyb120.namilite.hotswap.NamiHotLoader;
 import com.github.llyb120.namilite.boost.V20Auto;
+import com.github.llyb120.namilite.hotswap.RefreshScope;
 import com.github.llyb120.namilite.hotswap.SpringHotSwap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -29,9 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
 @EnableConfigurationProperties(NamiProperties.class)
@@ -60,6 +57,7 @@ public class NamiLite {
         return new NamiConfig();
     }
 
+    @Bean(name = "isDev")
     public boolean isDev(){
         String path = NamiHotLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         isDev = !path.contains(".jar!");
@@ -67,13 +65,28 @@ public class NamiLite {
     }
 
     @Autowired
-    public void setContext(ApplicationContext _context) {
+    public void config(ConfigurableBeanFactory beanFactory) {
+        beanFactory.registerScope("refreshScope", new RefreshScope());
+    }
+
+//    @Bean
+//    public CustomScopeConfigurer customScopeConfigurer() {
+//        CustomScopeConfigurer customScopeConfigurer = new CustomScopeConfigurer();
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("refreshScope", new RefreshScope());
+//        customScopeConfigurer.setScopes(map);
+//        return customScopeConfigurer;
+//    }
+
+    @Autowired
+    public void setContext(
+        @Autowired ApplicationContext _context,
+        @Autowired @Qualifier("isDev") boolean isDev
+                           ) {
         context = _context;
-
-        String osName = System.getProperty("os.name");
-        isWin = osName.toLowerCase().startsWith("windows");
-
-        if(!isDev()){
+//        String osName = System.getProperty("os.name");
+//        isWin = osName.toLowerCase().startsWith("windows");
+        if(!isDev){
             /**
              * 暂时不需要动态编译
              */
