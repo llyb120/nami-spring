@@ -2,9 +2,6 @@
 以插件化的形式注入spring，在不影响spring原功能的情况下，为srpingboot提供高效的热加载开发能力，以及灵活的数据可变性
 
 ## 快速开始
-1 新建一个空的springboot项目
-
-2 加入依赖
 
 ```xml
 <dependency>
@@ -14,99 +11,22 @@
 </dependency>
 ```
 
-3 注册一个NamiConfig的Bean
-```java
-@Bean
-public NamiConfig namiConfig(){
-    return new NamiConfig(){
-
-        //注册热加载的包
-        @Override
-        public List<String> hotPackages() {
-            return a(
-                "com.github.llyb120.stock.ctrl"
-            ) ;
-        }
-        
-        //spring热加载
-        @Override
-        public List<String> springHotPackages() {
-            return a(
-                "com.github.llyb120.namitest.test"
-            );
-        }
-
-
-        //0.0.8 新增，现在支持对多个路由和包的映射
-        @Override
-        public Map controlPackages() {
-            return o(
-                "/api/:c/:a", "com.github.llyb120.stock.ctrl"
-            );
-        }
-    } ;
-}
-```
-
-至此，即可编写Nami的控制器，并享受Nami带来的飞速开发 
-
-## 控制器(如无特殊说明，所有控制器均指Nami的控制器而非spring)
-* 你可以在非Nami控制器包下使用spring原本的控制器
-* 控制器的类必须继承 NamiBaseController ，例如
-```java
-public class Test extends NamiBaseController {
-}
-```
-* 若配置了访问路径(例如上文的/api)以及控制器的包名(例如com.example.ctrl)，则访问/api/{c}/{a}时会自动调用com.example.ctrl.{c}.{a}方法，a必须为一个public无参实现
-
-## 依赖注入
-* 对于spring自身的东西，你仍可以按照以前的方式使用
-* 对于nami，使用import static来获取bean，故不会侵入spring原本的注入方式，只需建立一个类注入即可
-```java
-//TestBean.java 注：该类不能放在热加载的包内
-@Component
-public class TestBean {
-
-    public static Environment environment;
-    public static File dir;
-
-    @Autowired
-    public void set(@Autowired Environment env){
-        environment = env;
-        dir = new File(environment.getProperty("stock.path"));
-    }
-}
-
-//test.java
-import static TestBean.*;
-public class test extends NamiBaseController{
-    public String test(){
-        return environment.getProperty("stock.path");
-    }   
-}
-```
-
-## 热加载
-* 如果你使用了nami的控制器，并且所调用的内容在配置的热加载包下，那么每当你修改这些内容的时候，无需重启服务直接刷新即可看到效果
-* 通常，你注入的spring的内容不要放在热加载的内容中，否则会无法正确获取到bean
-
-## 获取参数
-在控制器中你可以使用类似php的 $get/$post/$request/$files 来获取请求的值，分别对应GET请求/POST请求/任何请求/上传的文件
-
-## 授权
-* 你可以使用原本spring的过滤器来实现授权
-* 如果你想，你可以在NamiConfig中重写namiAuth来提供一个用于授权的对象, nami会在所有的请求中验证授权，如果你不需要，请使用UnLogin注解
-
 ## 针对Spring的热加载
+自0.0.20起，可以用!表示被排除热加载的包，例如同时具有com.demo.test和!com.demo.test.Test，则表示test包下的类全部热加载，但是排除Test类
+
 自0.0.17起，已经可以支持spring component的热加载，需满足以下条件
 * 被加载的组件必须有 @RequestMapping 或 @Service 注解
 * 被加载的组件中不能出现 @Bean 等初始化的东西
 * 如果需要 @Autowired 注入，则需要使用 @Resource 代替
-* 被加载的组件的包或者父包必须在 namiConfig 中的 springHotPackages 中声明
+* 被加载的组件的包或者父包必须在 nami.spring-hot-packages中声明
 
-自0.0.20起，可以用!表示被排除热加载的包，例如同时具有com.demo.test和!com.demo.test.Test，则表示test包下的类全部热加载，但是排除Test类
+## 针对固定组件的热加载
+自0.0.26起，可以对bean的初始化方法增加@Refresh注解，当触发热加载的时候，会通知spring重新加载这个bean（通常用于一些需要重新初始化的bean，例如beetlSQL）
 
 ## 针对Lombok的热加载
+自0.0.28起，可以配置nami.compiler进行编译器的切换，在使用javac的时候，可以同时开启nami.lombok=true，此时无需再配置javaagent
+
 自0.0.19起，已经可以支持对lombok的热加载
 * 启动时需要加上 -javaagent:lib/lombok.jar=ECJ 
 * lombok.jar的版本需要和pom中引入的lombok版本一致，推荐1.16.10，也可以直接下本项目中lib/lombok.jar来使用
+
