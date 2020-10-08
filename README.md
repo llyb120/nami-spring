@@ -11,6 +11,8 @@ springboot增强，为springboot提供高效的热加载开发能力，开发时
 </dependency>
 ```
 
+(中央仓库审核未通过，可先手动install到本地仓库)
+
 ## 配置项
 #### nami.spring-hot-packages (string[])
 热加载的包名，这些包下的java文件会被自动编译加载
