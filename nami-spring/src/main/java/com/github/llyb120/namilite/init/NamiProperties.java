@@ -14,9 +14,27 @@ public class NamiProperties {
 
     private List<String> springHotPackages = new ArrayList<>();
     private int compileWaitSeconds = 5;
+    private boolean useLombok = false;
+    private String compiler = "javac";
 
     public List<String> getSpringHotPackages() {
         return springHotPackages;
+    }
+
+    public boolean isUseLombok() {
+        return useLombok;
+    }
+
+    public void setUseLombok(boolean useLombok) {
+        this.useLombok = useLombok;
+    }
+
+    public String getCompiler() {
+        return compiler;
+    }
+
+    public void setCompiler(String compiler) {
+        this.compiler = compiler;
     }
 
     public void setSpringHotPackages(List<String> springHotPackages) {

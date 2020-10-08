@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.github.llyb120.json.Json.*;
 import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
+import static com.github.llyb120.namilite.init.NamiBean.namiProperties;
 import static com.github.llyb120.namilite.init.NamiLite.*;
 
 
@@ -39,7 +40,7 @@ public class NamiHotLoader extends ClassLoader {
     }
 
 //    private static JavaCompiler javac = ToolProvider.getSystemJavaCompiler(); //new EcjCompiler();
-    private static JavaCompiler javac = new EclipseCompiler();
+    private static JavaCompiler javac;// = new EclipseCompiler();
     private static ClassLoader defaultLoader = NamiHotLoader.class.getClassLoader();
 
 
@@ -121,6 +122,15 @@ public class NamiHotLoader extends ClassLoader {
      * @return 编译失败的文件
      */
     public static List<File> compileSync(File... files){
+        if (javac == null) {
+            if(namiProperties.getCompiler().equals("ecj")){
+                javac = new EclipseCompiler();
+            } else if(namiProperties.getCompiler().equals("javac")){
+                javac = ToolProvider.getSystemJavaCompiler();
+            } else {
+                throw new RuntimeException("error nami compiler");
+            }
+        }
         List<File> targets = Arrays.stream(files)
             .filter(e -> {
                 if(true){
@@ -135,12 +145,20 @@ public class NamiHotLoader extends ClassLoader {
             return a();
         }
         Arr<?> args = a(
-            "-noExit",
-            "-proceedOnError",
+                $expand,
+                namiProperties.getCompiler().equals("ecj") ? a(
+                    "-noExit",
+                    "-proceedOnError"
+                ) : a(),
             "-parameters",
             "-nowarn",
             "-source",
             "1.8",
+            $expand,
+            namiProperties.isUseLombok() && namiProperties.getCompiler().equals("javac") ? a(
+                "-processor",
+                "lombok.launch.AnnotationProcessorHider$AnnotationProcessor"
+            ) : a(),
             "-sourcepath",
             src,
             "-d",

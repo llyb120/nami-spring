@@ -53,7 +53,7 @@ public class TestController {
     @RequestMapping("/shit")
     public Object test2(){
         tt.test();
-        return "im not shiddt no you are 132333 ffddddf";
+        return "im not shiddt no you are 132333 ffddddf" + new TestLombok().getFuck();
     }
 
 }
