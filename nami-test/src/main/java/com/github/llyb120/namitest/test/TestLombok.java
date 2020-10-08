@@ -16,5 +16,5 @@ public class TestLombok {
     private int b = 2;
     private String ccc;
     private String d;
-    private String fuck = "a!!!ffck";
+    private String foo = "a!!!ffck";
 }

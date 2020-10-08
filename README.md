@@ -1,5 +1,5 @@
 # nami-spring
-以插件化的形式注入spring，在不影响spring原功能的情况下，为srpingboot提供高效的热加载开发能力，以及灵活的数据可变性
+springboot增强，为springboot提供高效的热加载开发能力，开发时引入，轻快灵动，正式上线时可完移除，不带走一丝云彩
 
 ## 快速开始
 

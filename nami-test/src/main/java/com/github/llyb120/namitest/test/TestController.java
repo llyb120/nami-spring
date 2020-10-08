@@ -45,15 +45,15 @@ public class TestController {
 //            declaredMethod.invoke(testService);
 //        }
         //13sdaf
-        return tService.foo() + new TestLombok(1,2, "fuc222k","f", "do not fuck").getFuck();
+        return tService.foo() + new TestLombok(1,2, "fuc222k","f", "do not foo").getFoo();
 //        testService.test();
-//        return "fuck-" + a + "-" + b + "-" + ttt;
+//        return "foo-" + a + "-" + b + "-" + ttt;
     }
 
-    @RequestMapping("/shit")
+    @RequestMapping("/foo")
     public Object test2(){
         tt.test();
-        return "im not shiddt no you are 132333 ffddddf" + new TestLombok().getFuck();
+        return "im not shiddt no you are 132333 ffddddf" + new TestLombok().getFoo();
     }
 
 }

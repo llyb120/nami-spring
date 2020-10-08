@@ -69,7 +69,7 @@ public class NamiConfig {
                 .bind("/api/mongo")
                 .rule(new EasyRule()
                         .collection("fu")
-                        .fields("fuck", "you", "oh"));
+                        .fields("foo", "you", "oh"));
 //        return o();
     }
 
