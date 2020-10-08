@@ -11,6 +11,18 @@
 </dependency>
 ```
 
+## 配置项
+#### nami.spring-hot-packages (string[])
+热加载的包名，这些包下的java文件会被自动编译加载
+#### nami.compile-wait-seconds (int)
+自动编译触发周期，默认为5秒
+
+注：当控制器进行响应的时候，如果一个java文件旧于class文件，仍然会触发一次热加载
+#### nami.use-lombok (true/false)
+是否启用lombok，仅在javac编译器下有用
+#### nami.compiler (javac/ecj)
+使用的编译器，javac或者ecj，默认为javac
+
 ## 针对Spring的热加载
 针对spring component的热加载，需满足以下条件
 * 被加载的组件必须有 @RequestMapping 或 @Service 注解
