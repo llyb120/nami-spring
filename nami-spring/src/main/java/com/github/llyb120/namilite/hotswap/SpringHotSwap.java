@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 
@@ -208,7 +209,12 @@ public class SpringHotSwap {
         try{
             Set<File> files = getSpringHotFiles(true);
             if(!lastErrorFiles.isEmpty()){
-                files.addAll(lastErrorFiles);
+                files.addAll(
+                    //只保留存在的文件
+                    lastErrorFiles.stream()
+                    .filter(File::exists)
+                    .collect(Collectors.toList())
+                );
                 lastErrorFiles.clear();
             }
             if(files.isEmpty()){
