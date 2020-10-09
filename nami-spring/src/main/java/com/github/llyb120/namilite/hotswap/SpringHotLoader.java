@@ -4,7 +4,6 @@ import com.github.llyb120.namilite.init.NamiBean;
 
 import java.util.List;
 
-import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 
 /**
  * @Author: Administrator
@@ -19,9 +18,6 @@ public class SpringHotLoader extends NamiHotLoader{
         }
         boolean maybe = false;
         List<String> pkgs = NamiBean.namiProperties.getSpringHotPackages();
-        if(pkgs.isEmpty()){
-            pkgs = namiConfig.springHotPackages();
-        }
         for (String hotPackage : pkgs) {
             if(hotPackage.startsWith("!")){
                 hotPackage = hotPackage.substring(1);

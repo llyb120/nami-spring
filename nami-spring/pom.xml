@@ -12,7 +12,7 @@
 
     <groupId>com.github.llyb120</groupId>
     <artifactId>nami-spring</artifactId>
-    <version>0.0.28</version>
+    <version>1.0.0</version>
 
 
     <dependencies>
@@ -28,13 +28,21 @@
             <scope>provided</scope>
         </dependency>
 
-
-        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-all -->
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-core -->
         <dependency>
             <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>5.1.2</version>
+            <artifactId>hutool-core</artifactId>
+            <version>5.4.4</version>
         </dependency>
+
+
+
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-all -->
+<!--        <dependency>-->
+<!--            <groupId>cn.hutool</groupId>-->
+<!--            <artifactId>hutool-all</artifactId>-->
+<!--            <version>5.1.2</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,32 +50,31 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>com.github.llyb120</groupId>
-            <artifactId>json</artifactId>
-            <version>1.1.15</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.llyb120</groupId>-->
+<!--            <artifactId>json</artifactId>-->
+<!--            <version>1.1.15</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.tuckey</groupId>
-            <artifactId>urlrewritefilter</artifactId>
-            <version>4.0.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.tuckey</groupId>-->
+<!--            <artifactId>urlrewritefilter</artifactId>-->
+<!--            <version>4.0.3</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>com.ibeetl</groupId>
-            <artifactId>beetl-framework-starter</artifactId>
-            <version>1.1.60.RELEASE</version>
-            <scope>provided</scope>
-        </dependency>
-
+<!--        <dependency>-->
+<!--            <groupId>com.ibeetl</groupId>-->
+<!--            <artifactId>beetl-framework-starter</artifactId>-->
+<!--            <version>1.1.60.RELEASE</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.11.0</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.mongodb</groupId>-->
+<!--            <artifactId>mongo-java-driver</artifactId>-->
+<!--            <version>3.11.0</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.eclipse.jdt/ecj -->
         <dependency>
@@ -77,18 +84,18 @@
         </dependency>
 
         <!-- swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.springfox</groupId>-->
+<!--            <artifactId>springfox-swagger2</artifactId>-->
+<!--            <version>2.9.2</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>io.springfox</groupId>-->
+<!--            <artifactId>springfox-swagger-ui</artifactId>-->
+<!--            <version>2.9.2</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
 
     </dependencies>

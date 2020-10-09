@@ -2,8 +2,6 @@ package com.github.llyb120.namilite.hotswap;
 
 
 import cn.hutool.core.io.FileUtil;
-import com.github.llyb120.json.Arr;
-import com.github.llyb120.json.Json;
 import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
 
 import javax.tools.JavaCompiler;
@@ -12,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -19,8 +18,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import static com.github.llyb120.json.Json.*;
-import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 import static com.github.llyb120.namilite.init.NamiBean.namiProperties;
 import static com.github.llyb120.namilite.init.NamiLite.*;
 
@@ -81,12 +78,13 @@ public class NamiHotLoader extends ClassLoader {
     }
 
     public boolean isHotClass(String clzName){
-        for (String hotPackage : namiConfig.getFullHotPackages()) {
-            if(clzName.startsWith(hotPackage)) {
-                return true;
-            }
-        }
         return false;
+//        for (String hotPackage : namiConfig.getFullHotPackages()) {
+//            if(clzName.startsWith(hotPackage)) {
+//                return true;
+//            }
+//        }
+//        return false;
     }
 
     public boolean isHotFile(File file){
@@ -142,30 +140,47 @@ public class NamiHotLoader extends ClassLoader {
             })
             .collect(Collectors.toList());
         if (targets.isEmpty()) {
-            return a();
+            return new ArrayList<>();
         }
-        Arr<?> args = a(
-                $expand,
-                namiProperties.getCompiler().equals("ecj") ? a(
-                    "-noExit",
-                    "-proceedOnError"
-                ) : a(),
-            "-parameters",
-            "-nowarn",
-            "-source",
-            "1.8",
-            $expand,
-            namiProperties.isUseLombok() && namiProperties.getCompiler().equals("javac") ? a(
-                "-processor",
-                "lombok.launch.AnnotationProcessorHider$AnnotationProcessor"
-            ) : a(),
-            "-sourcepath",
-            src,
-            "-d",
-            target
-//            files
-//            file.getAbsolutePath()
-        );
+        List<String> args = new ArrayList<>();
+        if(namiProperties.getCompiler().equals("ecj")){
+            args.add("-noExit");
+            args.add("-proceedOnError");
+        }
+        args.add("-parameters");
+        args.add("-nowarn");
+        args.add("-source");
+        args.add("1.8");
+        if(namiProperties.isUseLombok() && namiProperties.getCompiler().equals("javac") ){
+            args.add("-processor");
+            args.add("lombok.launch.AnnotationProcessorHider$AnnotationProcessor");
+        }
+        args.add("-sourcepath");
+        args.add(src);
+        args.add("-d");
+        args.add(target);
+//        Arr<?> args = a(
+//                $expand,
+//                namiProperties.getCompiler().equals("ecj") ? a(
+//                    "-noExit",
+//                    "-proceedOnError"
+//                ) : a(),
+//            "-parameters",
+//            "-nowarn",
+//            "-source",
+//            "1.8",
+//            $expand,
+//            namiProperties.isUseLombok() && namiProperties.getCompiler().equals("javac") ? a(
+//                "-processor",
+//                "lombok.launch.AnnotationProcessorHider$AnnotationProcessor"
+//            ) : a(),
+//            "-sourcepath",
+//            src,
+//            "-d",
+//            target
+////            files
+////            file.getAbsolutePath()
+//        );
         args.addAll(
             (List) targets.stream().map(e -> e.getAbsolutePath()).distinct().collect(Collectors.toList())
         );
@@ -176,7 +191,7 @@ public class NamiHotLoader extends ClassLoader {
             args.toArray(new String[0])
         );
 
-        return status == 0 ? a() : targets;
+        return status == 0 ? new ArrayList<>() : targets;
     }
 
     @Deprecated
@@ -185,7 +200,7 @@ public class NamiHotLoader extends ClassLoader {
         try {
             file = File.createTempFile("test", ".java");
             FileUtil.writeString(String.format("public class %s{public static void main(String[] args){} }", file.getName().replace(".java", "")), file, StandardCharsets.UTF_8);
-            Arr<?> args = a(
+            List<String> args = Arrays.asList(
                 "-noExit",
                 "-proceedOnError",
                 "-parameters",
@@ -197,7 +212,7 @@ public class NamiHotLoader extends ClassLoader {
                 "-d",
                 target,
                 file.getAbsolutePath()
-                );
+            );
             int status = javac.run(
                 null,
                 null,
@@ -217,37 +232,6 @@ public class NamiHotLoader extends ClassLoader {
             compileSync(files);
         });
     }
-
-
-    /**
-     * 给接口测试用的，不需要改
-     *
-     * @param file
-     * @param outDir
-     */
-    public static void compile(File file, File outDir) {
-        Arr<?> args = aaa(
-//                "-noExit",
-//                "-proceedOnError",
-                "-parameters",
-                "-nowarn",
-                "-source",
-                "1.8",
-                isDev ? undefined : "-cp",
-                isDev ? undefined : cp,
-                "-d",
-                outDir.getAbsolutePath(),
-                file.getAbsolutePath()
-        );
-        System.out.println(Json.stringify(args));
-        int status = javac.run(
-                null,
-                null,
-                null,
-                args.toArray(new String[0])
-        );
-    }
-
 
 
     public static class GenKit {

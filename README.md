@@ -43,6 +43,6 @@ springboot增强，为springboot提供高效的热加载开发能力，开发时
 * 启动时需要加上 -javaagent:lib/lombok.jar=ECJ 
 * lombok.jar的版本需要和pom中引入的lombok版本一致，推荐1.16.10，也可以直接下本项目中lib/lombok.jar来使用
 
-自0.0.28起，可以配置nami.compiler进行编译器的切换，在使用javac的时候，可以同时开启nami.lombok=true，此时无需再配置javaagent
+自0.0.28起，可以配置nami.compiler进行编译器的切换，在使用javac的时候，可以同时开启nami.lombok=true，此时无需再配置javaagent，需要jdk的classpath中有tools.jar
 
 

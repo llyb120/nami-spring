@@ -5,11 +5,9 @@ import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.watchers.DelayWatcher;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.github.llyb120.namilite.ByteCodeLoader;
-import com.github.llyb120.namilite.config.NamiConfig;
-import com.github.llyb120.namilite.core.Async;
 import com.github.llyb120.namilite.hotswap.NamiHotLoader;
-import com.github.llyb120.namilite.boost.V20Auto;
 import com.github.llyb120.namilite.hotswap.RefreshScope;
 import com.github.llyb120.namilite.hotswap.SpringHotSwap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +47,6 @@ public class NamiLite {
     @Autowired
     public void setEnv(Environment _env) {
         env = _env;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    NamiConfig namiConfig(){
-        return new NamiConfig();
     }
 
     @Bean(name = "isDev")
@@ -130,47 +122,27 @@ public class NamiLite {
 //            cp = sb.toString();
 //            System.out.println(cp);
         } else {
-            watch();
             watch2();
             watchResource();
         }
     }
 
-//    private volatile boolean inWatching = false;
-    @Deprecated
-    private void watch(){
-        WatchMonitor monitor = WatchMonitor.createAll(NamiHotLoader.src, new SimpleWatcher(){
-
-            @Override
-            public void onCreate(WatchEvent<?> event, Path currentPath) {
-                Path p = (Path) event.context();
-                p = Paths.get(currentPath.toString(), p.toString());
-                if(Files.isDirectory(p)){
-                    return;
-                }
-                String realpath = p.toString();
-                if(realpath.contains("~")){
-                    realpath = realpath.replace("~","");
-                }
-                SpringHotSwap.startCompile(context, new File(realpath));
-            }
-
-        });
-        monitor.setMaxDepth(10);
-        monitor.start();
-        System.out.println(String.format("watch %s to auto compile, target dir is %s", NamiHotLoader.src, NamiHotLoader.target));
-    }
-
 
     private void watch2(){
-        Async.execute(() -> {
-;            while(true){
-                SpringHotSwap.lock.lock();
+        ThreadUtil.execute(() -> {
+            try{
+                while(true){
+                    SpringHotSwap.lock.lock();
 //                System.out.println("waiting");
-                SpringHotSwap.condition.await(namiProperties.getCompileWaitSeconds(), TimeUnit.SECONDS);
+                    SpringHotSwap.condition.await(namiProperties.getCompileWaitSeconds(), TimeUnit.SECONDS);
 //                System.out.println("wait over");
-                springHotSwap.startCompile2();
-                SpringHotSwap.lock.unlock();
+                    springHotSwap.startCompile2();
+                    SpringHotSwap.lock.unlock();
+                }
+            } catch (Exception e){
+                throw new RuntimeException(e);
+            } finally {
+                System.exit(-1);
             }
         });
     }
@@ -275,109 +247,5 @@ public class NamiLite {
 ////        return false;
 //    }
 
-
-    public static void AutoWiredBean(Object instance) {
-        Class clz = instance.getClass();
-        while(clz != null){
-            //生效spring的注入
-            for (Field field : clz.getDeclaredFields()) {
-                Autowired autowired = field.getAnnotation(Autowired.class);
-                Object bean = null;
-                if (autowired != null) {
-                    field.setAccessible(true);
-                    Qualifier qualifier = field.getAnnotation(Qualifier.class);
-                    try{
-                        if (qualifier != null) {
-                            bean = context.getBean(qualifier.value());
-                        } else {
-                            bean = context.getBean(field.getType());
-                        }
-                        field.set(instance, bean);
-                        continue;
-                    } catch (Exception e){
-                    }
-                }
-                V20Auto auto = field.getAnnotation(V20Auto.class);
-                if (auto != null) {
-                    bean = Bean(field.getType());
-                    try {
-                        field.setAccessible(true);
-                        field.set(instance, bean);
-                    } catch (IllegalAccessException e) {
-                    }
-                    continue;
-                }
-            }
-            clz = clz.getSuperclass();
-        }
-
-    }
-
-    /**
-     * 只能动态加载V20下的bean
-     * @param clz
-     * @param <T>
-     * @return
-     */
-    @Deprecated
-    public static <T> T Bean(Class<T> clz) {
-        Object instance = null;
-        try {
-            instance = clz.newInstance();
-            AutoWiredBean(instance);
-            return (T) instance;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Deprecated
-    public static Object Bean(String className) {
-        ClassLoader loader;
-        Class clzz;
-        try{
-            if(isDev){
-                loader = new NamiHotLoader();
-                clzz = loader.loadClass(className);
-                return Bean(clzz);
-            } else {
-                loader = NamiSpringController.class.getClassLoader();
-                clzz = loader.loadClass(className);
-                return Bean(clzz);
-            }
-        } catch (Exception e){
-            return null;
-        }
-    }
-
-    public static Class Clz(String className){
-        Class clzz;
-        try{
-            ClassLoader loader;
-            if(isDev){
-                loader = new NamiHotLoader();
-                return clzz = loader.loadClass(className);
-            } else {
-                loader = NamiSpringController.class.getClassLoader();
-                return clzz = loader.loadClass(className);
-            }
-        } catch (Exception e){
-            return null;
-        }
-    }
-
-    @Deprecated
-    public static Object Bean(String className, byte[] bs){
-        ByteCodeLoader loader = new ByteCodeLoader(className, bs);
-        try {
-            Class<?> clzz = loader.loadClass(className);
-            return Bean(clzz);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-//    public static
 
 }

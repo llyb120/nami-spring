@@ -3,7 +3,6 @@ package com.github.llyb120.namilite.hotswap;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
-import com.github.llyb120.namilite.core.Async;
 import com.github.llyb120.namilite.init.NamiProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -24,13 +23,13 @@ import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import static com.github.llyb120.namilite.init.NamiBean.namiConfig;
 
 /**
  * @Author: Administrator
@@ -45,11 +44,8 @@ public class SpringHotSwap {
 
     public volatile static Future compileTask = null;
     public volatile static Future springReloadTask = null;
-    private static NamiHotLoader namiHotLoader = new NamiHotLoader();
     private static SpringHotLoader springHotLoader = new SpringHotLoader();
-    //    public static ReentrantLock lock = new ReentrantLock();
-    private static volatile Set<File> changedFile = new ConcurrentHashSet<>();
-    private static volatile Set<File> lastErrorFiles = new ConcurrentHashSet<>();
+    private static volatile Set<File> lastErrorFiles = new ConcurrentSkipListSet<>();
 
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition condition = lock.newCondition();
@@ -60,9 +56,6 @@ public class SpringHotSwap {
         Set<File> set = new HashSet<>();
         Set<String> removeAble = new HashSet<>();
         List<String> pkgs = namiProperties.getSpringHotPackages();
-        if (pkgs.isEmpty()) {
-            pkgs = namiConfig.springHotPackages();
-        }
         for (String springHotPackage : pkgs) {
             if (springHotPackage.startsWith("!")) {
                 removeAble.add(new File(springHotPackage.substring(1)).getAbsolutePath());
@@ -165,49 +158,6 @@ public class SpringHotSwap {
 
     }
 
-    @Deprecated
-    public static void startCompile(ApplicationContext context, File file) {
-        if (compileTask == null) {
-            compileTask = Async.execute(() -> {
-                try {
-                    Thread.sleep(66);
-                    File[] files = changedFile.stream()
-                        .filter(namiHotLoader::isHotFile)
-                        .toArray(File[]::new);
-                    NamiHotLoader.compile(
-                        files
-                    );
-//                    System.out.println("compiled and reload success");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    changedFile.clear();
-                    compileTask = null;
-                }
-            });
-        }
-
-//        if (springReloadTask == null) {
-//            springReloadTask = Async.execute(() -> {
-//                try {
-//                    Thread.sleep(50);
-//                    HashSet<File> cpSet = new HashSet<>(changedFile);
-//                    if(
-//                        cpSet.stream().noneMatch(e -> springHotLoader.isHotFile(e))
-//                    ){
-//                        return;
-//                    }
-//                    refreshSpringBeans(context);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    springReloadTask = null;
-//                }
-//            });
-//        }
-        changedFile.add(file);
-    }
-
     public void startCompile2() throws ExecutionException, InterruptedException {
         try{
             Set<File> files = getSpringHotFiles(true);
@@ -224,7 +174,7 @@ public class SpringHotSwap {
                 return;
             }
 //            System.out.println(files);
-            List<File> failed = NamiHotLoader.compileSync(ArrayUtil.toArray(files, File.class));
+            List<File> failed = NamiHotLoader.compileSync(files.toArray(new File[0]));
             if(!failed.isEmpty()){
                 //编译失败
                 lastErrorFiles.clear();
@@ -315,7 +265,7 @@ public class SpringHotSwap {
 //                }
 //            }
 //            //生成新类名
-            String clzFakeName = "namiDev_" + IdUtil.objectId();
+            String clzFakeName = "namiDev_" + UUID.randomUUID().toString();//IdUtil.objectId();
 //            ctrlNames.put(clz.getSimpleName(), clzFakeName);
             // 这里通过builder直接生成了mycontrooler的definition，然后注册进去
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(clz);
