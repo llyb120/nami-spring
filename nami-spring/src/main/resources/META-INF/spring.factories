@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.github.llyb120.namilite.init.NamiBean,\
+  com.github.llyb120.namilite.init.NamiLite,\
+  com.github.llyb120.namilite.init.DevInterceptor,\
+  com.github.llyb120.namilite.hotswap.SpringHotSwap
